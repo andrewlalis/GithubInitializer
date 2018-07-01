@@ -8,14 +8,43 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class TeamGenerator {
 
-    public static List<Team> generateFromCSV(String filename, int teamSize) throws IOException {
-        System.out.println("Generating teams of size " + teamSize);
+    private static final Logger logger = Logger.getLogger(TeamGenerator.class.getName());
+    static {
+        logger.setParent(Logger.getGlobal());
+    }
+
+    /**
+     * Creates a list of teams by reading a CSV file of a certain format. The format for each column is as follows:
+     * 1. Timestamp - The date and time the record was entered.
+     * 2. Username - The email address.
+     * 3. Name - The student's name.
+     * 4. Student Number
+     * 5. Github Username
+     * 6. I have chosen a partner. (Yes / No) If yes:
+     *      7. Your Partner's Student Number
+     * @param filename The CSV file to load from.
+     * @param teamSize The preferred teamsize used in creating teams.
+     * @return A list of teams.
+     * @throws IOException If the file is unable to be read.
+     * @throws IllegalArgumentException If an invalid teamsize is given.
+     */
+    public static List<Team> generateFromCSV(String filename, int teamSize) throws IOException, IllegalArgumentException {
+        logger.info("Generating teams of size " + teamSize);
+        if (teamSize < 1) {
+            logger.severe("Invalid team size.");
+            throw new IllegalArgumentException("Team size must be greater than or equal to 1. Got " + teamSize);
+        }
+        logger.finest("Parsing CSV file.");
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(new FileReader(filename));
 
+        logger.finest("Reading all records into map.");
         Map<Integer, Student> studentMap = readAllStudents(records, teamSize);
+
+        logger.finest("Generating all valid teams from student map.");
         return generateAllValidTeams(studentMap, teamSize);
     }
 
