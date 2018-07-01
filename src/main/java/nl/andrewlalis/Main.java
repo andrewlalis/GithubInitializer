@@ -18,7 +18,7 @@ public class Main {
 
     private static final Logger logger = Logger.getGlobal();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         // Parsed command line arguments.
         Map<String, String> userOptions = CommandLine.parseArgs(args);
@@ -32,11 +32,20 @@ public class Main {
 
         logger.info("Initializer for Github Repositories in Educational Organizations.");
 
-        List<Team> teams = TeamGenerator.generateFromCSV(
-                userOptions.get("input"),
-                Integer.parseInt(userOptions.get("teamsize"))
-        );
-        logger.info("Teams created: " + teams);
+        // Get teams from CSV file.
+        List<Team> teams;
+        try {
+            teams = TeamGenerator.generateFromCSV(
+                    userOptions.get("input"),
+                    Integer.parseInt(userOptions.get("teamsize"))
+            );
+            logger.info("Teams created: " + teams);
+        } catch (IOException | ArrayIndexOutOfBoundsException e) {
+            logger.severe("Unable to generate teams from CSV file, exiting.");
+            System.exit(1);
+        }
+
+
 
     }
 }

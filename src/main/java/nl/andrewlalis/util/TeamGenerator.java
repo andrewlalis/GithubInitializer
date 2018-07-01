@@ -38,16 +38,40 @@ public class TeamGenerator {
             logger.severe("Invalid team size.");
             throw new IllegalArgumentException("Team size must be greater than or equal to 1. Got " + teamSize);
         }
-        logger.finest("Parsing CSV file.");
+        logger.fine("Parsing CSV file.");
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(new FileReader(filename));
 
-        logger.finest("Reading all records into map.");
-        Map<Integer, Student> studentMap = readAllStudents(records, teamSize);
+        logger.fine("Reading all records into map.");
+        Map<Integer, Student> studentMap;
+        try {
+            studentMap = readAllStudents(records, teamSize);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            logger.severe("Team size does not match column count in records.");
+            throw new IllegalArgumentException("Team size does not match column count in records.");
+        }
 
-        logger.finest("Generating all valid teams from student map.");
+
+        logger.fine("Generating all valid teams from student map.");
         return generateAllValidTeams(studentMap, teamSize);
     }
 
+    /**
+     * Generates all teams, given a mapping of all students to their student numbers. It will first try to generate
+     * teams from students' preferences, and then take all students who are not in a team, and merge them into as many
+     * teams as possible, and grouping all remainder single students into one final team.
+     *
+     * The algorithm works as follows:
+     * For each student, try to create a team from their preferred partner numbers.
+     *      Check if the team is valid by confirming that all their partners have the same preferred partners.
+     *      If that's true, add this team, and remove all students in it from the list of singles.
+     *      If it's not true, then the students will not be removed from the list of singles, and a warning is given.
+     * After all students with preferred partners are placed in teams, the single students are merged, and their teams
+     * are added afterwards.
+     *
+     * @param studentMap A mapping for each student to their student number.
+     * @param teamSize The preferred maximum size for a team.
+     * @return A list of teams, most of which are of teamSize size.
+     */
     private static List<Team> generateAllValidTeams(Map<Integer, Student> studentMap, int teamSize) {
         List<Student> singleStudents = new ArrayList<>(studentMap.values());
         List<Team> teams = new ArrayList<>();
@@ -56,13 +80,15 @@ public class TeamGenerator {
         // For each student, try to make a team from its preferred partners.
         for (Map.Entry<Integer, Student> e : studentMap.entrySet()) {
             Team t = e.getValue().getPreferredTeam(studentMap);
+            logger.finest("Checking if student's preferred team is valid: " + t.getStudents());
             // Check if the team is of a valid size, and is not a duplicate.
             // Note that at this stage, singles are treated as teams of 1, and thus not valid for any teamSize > 1.
             if (t.isValid(teamSize) && !teams.contains(t)) {
-                t.setId(teamCount++);
                 // Once we know this team is completely valid, we remove all the students in it from the list of singles.
+                t.setId(teamCount++);
                 singleStudents.removeAll(t.getStudents());
                 teams.add(t);
+                logger.fine("Created team: " + t);
             }
         }
 
@@ -70,15 +96,27 @@ public class TeamGenerator {
         return teams;
     }
 
+    /**
+     * Given a list of single students, this method generates as many teams as possible. that are as close to the team
+     * size as possible.
+     * @param singleStudents A list of students who have no preferred partners.
+     * @param teamSize The preferred team size.
+     * @param teamIndex The current number used in assigning an id to the team.
+     * @return A list of teams comprising of single students.
+     */
     private static List<Team> mergeSingleStudents(List<Student> singleStudents, int teamSize, int teamIndex) {
         List<Team> teams = new ArrayList<>();
         while (!singleStudents.isEmpty()) {
             Team t = new Team();
             t.setId(teamIndex++);
+            logger.fine("Creating new team of single students: " + t);
             while (t.getStudentCount() < teamSize && !singleStudents.isEmpty()) {
-                t.addStudent(singleStudents.remove(0));
+                Student s = singleStudents.remove(0);
+                logger.finest("Single student: " + s);
+                t.addStudent(s);
             }
             teams.add(t);
+            logger.fine("Created team: " + t);
         }
         return teams;
     }
@@ -88,10 +126,12 @@ public class TeamGenerator {
      * @param records The records in the CSV file.
      * @param teamSize The preferred size of teams, or rather, the expected number of partners.
      * @return A map of all students in the file.
+     * @throws ArrayIndexOutOfBoundsException if the teamSize does not work with the columns in the record.
      */
-    private static Map<Integer, Student> readAllStudents(Iterable<CSVRecord> records, int teamSize) {
+    private static Map<Integer, Student> readAllStudents(Iterable<CSVRecord> records, int teamSize) throws ArrayIndexOutOfBoundsException {
         Map<Integer, Student> studentMap = new HashMap<>();
         for (CSVRecord record : records) {
+            logger.finest("Read record: " + record);
             List<Integer> preferredIds = new ArrayList<>();
             if (record.get(5).equals("Yes")) {
                 int columnOffset = 6;
@@ -102,6 +142,7 @@ public class TeamGenerator {
             Student s = new Student(Integer.parseInt(record.get(3)), record.get(2), record.get(1), record.get(4), preferredIds);
             studentMap.put(s.getNumber(), s);
         }
+        logger.fine("Read " + studentMap.size() + " students from records.");
         return studentMap;
     }
 
