@@ -1,5 +1,6 @@
 package nl.andrewlalis;
 
+import nl.andrewlalis.git_api.Initializer;
 import nl.andrewlalis.model.Team;
 import nl.andrewlalis.util.Logging;
 import nl.andrewlalis.util.TeamGenerator;
@@ -33,7 +34,7 @@ public class Main {
         logger.info("Initializer for Github Repositories in Educational Organizations.");
 
         // Get teams from CSV file.
-        List<Team> teams;
+        List<Team> teams = null;
         try {
             teams = TeamGenerator.generateFromCSV(
                     userOptions.get("input"),
@@ -45,7 +46,12 @@ public class Main {
             System.exit(1);
         }
 
-
+        Initializer initializer = new Initializer(
+                userOptions.get("organization"),
+                userOptions.get("token"),
+                "assignments"
+        );
+        initializer.initializeGithubRepos(teams);
 
     }
 }

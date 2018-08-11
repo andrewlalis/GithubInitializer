@@ -111,6 +111,11 @@ public class Team {
         return sb.toString();
     }
 
+    /**
+     * Returns a pretty formatting of this team so that it can be viewed in the command line. This is mainly for
+     * debugging purposes.
+     * @return A string representing the team.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Team: ");
