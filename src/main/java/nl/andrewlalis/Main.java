@@ -8,6 +8,7 @@ import nl.andrewlalis.util.TeamGenerator;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import nl.andrewlalis.util.CommandLine;
@@ -49,7 +50,7 @@ public class Main {
         Initializer initializer = new Initializer(
                 userOptions.get("organization"),
                 userOptions.get("token"),
-                "assignments"
+                "assignments_2018"
         );
         initializer.initializeGithubRepos(studentTeams);
 

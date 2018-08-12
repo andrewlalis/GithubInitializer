@@ -1,6 +1,9 @@
 package nl.andrewlalis.git_api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.model.TATeam;
 import org.apache.http.HttpResponse;
@@ -16,13 +19,13 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * This class is responsible for initializing the Github repositories and setting permissions, adding teams, etc.
@@ -78,26 +81,38 @@ public class Initializer {
      * @param studentTeams The list of student studentTeams.
      */
     public void initializeGithubRepos(List<StudentTeam> studentTeams) {
-        listMemberTeams();
-        //this.createRepository(this.assignmentsRepo, )
+        List<TATeam> taTeams = listMemberTeams();
+        TATeam teamAll = this.getTeamAll(taTeams, "teaching-assistants");
+        this.createRepository(this.assignmentsRepo, teamAll);
     }
 
     private boolean createRepository(String repositoryName, TATeam taTeam) {
-        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-        nvps.add(new BasicNameValuePair("name", repositoryName));
-        nvps.add(new BasicNameValuePair("private", "True"));
-        nvps.add(new BasicNameValuePair("has_issues", "True"));
-        nvps.add(new BasicNameValuePair("has_wiki", "True"));
-        nvps.add(new BasicNameValuePair("team_id", taTeam.getId()));
-        nvps.add(new BasicNameValuePair("auto_init", "False"));
-        nvps.add(new BasicNameValuePair("gitignore_template", "Java"));
+        logger.info("Creating repository: " + repositoryName);
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode root = mapper.createObjectNode();
+        root.put("name", repositoryName);
+        root.put("private", false);
+        root.put("has_issues", true);
+        root.put("has_wiki", true);
+        root.put("team_id", taTeam.getId());
+        root.put("auto_init", false);
+        root.put("gitignore_template", "Java");
+        String json = null;
+        try {
+            json = mapper.writer().writeValueAsString(root);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(this.urlBuilder.buildRepoURL());
         try {
-            post.setEntity(new StringEntity(nvps.toString()));
+            post.setEntity(new StringEntity(json));
             post.setHeader("Content-type", "application/json");
             HttpResponse response = client.execute(post);
-
+            logger.info("Response from creating repository POST: " + response.getStatusLine().getStatusCode());
+            logger.info(getResponseBody(response));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -105,24 +120,56 @@ public class Initializer {
     }
 
     /**
+     * Extracts the team containing all TA's from a list of all teams.
+     * @param taTeams The list of all teams in the organization.
+     * @param teamAllName The name of the team representing all TA's.
+     * @return The team which holds all TA's.
+     */
+    private TATeam getTeamAll(List<TATeam> taTeams, String teamAllName) {
+        for (TATeam team : taTeams) {
+            if (team.getName().equals(teamAllName)) {
+                return team;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Obtains a list of all teams in the organization, meaning all teaching assistant teams.
      * @return A list of all teams in the organization.
      */
-    private Map<String, String> listMemberTeams() {
+    private List<TATeam> listMemberTeams() {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet get = new HttpGet(this.urlBuilder.buildTeamURL());
         try (CloseableHttpResponse response = client.execute(get)) {
             StatusLine line = response.getStatusLine();
-            logger.finest("Response code from listing member teams: " + line.getStatusCode());
-            logger.finest("Response entity: " + response.getEntity().toString());
-            HashMap<String,Object> result =
-                    new ObjectMapper().readValue(response.getEntity().getContent(), HashMap.class);
-            for (Map.Entry<String, Object> e : result.entrySet()) {
-                logger.finest(e.getKey() + ": " + e.getValue());
+            logger.finer("Response code from listing member teams: " + line.getStatusCode());
+            String result = getResponseBody(response);
+            logger.finer("Response entity: " + result);
+
+            ObjectMapper mapper = new ObjectMapper();
+            List<TATeam> memberTeams = mapper.readValue(result, new TypeReference<List<TATeam>>(){});
+            for (TATeam r : memberTeams) {
+                logger.finest(r.toString());
             }
+            return memberTeams;
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Extracts a string which represents the response body of an HttpResponse.
+     * @param response The response to a previous request.
+     * @return A string containing the whole response body.
+     */
+    private static String getResponseBody(HttpResponse response) {
+        try {
+            return new BufferedReader(new InputStreamReader(response.getEntity().getContent())).lines().collect(Collectors.joining("\n"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }
