@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Represents one or more students' collective information.
  */
-public class Team {
+public class StudentTeam {
 
     /**
      * The list of students in this team.
@@ -18,7 +18,7 @@ public class Team {
      */
     private int id;
 
-    public Team() {
+    public StudentTeam() {
         this.students = new ArrayList<>();
         this.id = -1;
     }
@@ -118,7 +118,7 @@ public class Team {
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Team: ");
+        StringBuilder sb = new StringBuilder("StudentTeam: ");
         sb.append(this.id).append('\n');
         for (Student s : this.students) {
             sb.append('\t').append(s.toString()).append('\n');
@@ -134,8 +134,8 @@ public class Team {
      */
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Team) {
-            Team t = (Team) o;
+        if (o instanceof StudentTeam) {
+            StudentTeam t = (StudentTeam) o;
             if (t.getStudentCount() != this.getStudentCount()) {
                 return false;
             }

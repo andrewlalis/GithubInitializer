@@ -1,7 +1,7 @@
 package nl.andrewlalis;
 
 import nl.andrewlalis.git_api.Initializer;
-import nl.andrewlalis.model.Team;
+import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.util.Logging;
 import nl.andrewlalis.util.TeamGenerator;
 
@@ -33,16 +33,16 @@ public class Main {
 
         logger.info("Initializer for Github Repositories in Educational Organizations.");
 
-        // Get teams from CSV file.
-        List<Team> teams = null;
+        // Get studentTeams from CSV file.
+        List<StudentTeam> studentTeams = null;
         try {
-            teams = TeamGenerator.generateFromCSV(
+            studentTeams = TeamGenerator.generateFromCSV(
                     userOptions.get("input"),
                     Integer.parseInt(userOptions.get("teamsize"))
             );
-            logger.info("Teams created: " + teams);
+            logger.info("Teams created: " + studentTeams);
         } catch (IOException | ArrayIndexOutOfBoundsException e) {
-            logger.severe("Unable to generate teams from CSV file, exiting.");
+            logger.severe("Unable to generate studentTeams from CSV file, exiting.");
             System.exit(1);
         }
 
@@ -51,7 +51,7 @@ public class Main {
                 userOptions.get("token"),
                 "assignments"
         );
-        initializer.initializeGithubRepos(teams);
+        initializer.initializeGithubRepos(studentTeams);
 
     }
 }

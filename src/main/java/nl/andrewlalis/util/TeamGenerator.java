@@ -1,7 +1,7 @@
 package nl.andrewlalis.util;
 
 import nl.andrewlalis.model.Student;
-import nl.andrewlalis.model.Team;
+import nl.andrewlalis.model.StudentTeam;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
@@ -32,11 +32,11 @@ public class TeamGenerator {
      * @throws IOException If the file is unable to be read.
      * @throws IllegalArgumentException If an invalid teamsize is given.
      */
-    public static List<Team> generateFromCSV(String filename, int teamSize) throws IOException, IllegalArgumentException {
+    public static List<StudentTeam> generateFromCSV(String filename, int teamSize) throws IOException, IllegalArgumentException {
         logger.info("Generating teams of size " + teamSize);
         if (teamSize < 1) {
             logger.severe("Invalid team size.");
-            throw new IllegalArgumentException("Team size must be greater than or equal to 1. Got " + teamSize);
+            throw new IllegalArgumentException("StudentTeam size must be greater than or equal to 1. Got " + teamSize);
         }
         logger.fine("Parsing CSV file.");
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(new FileReader(filename));
@@ -46,8 +46,8 @@ public class TeamGenerator {
         try {
             studentMap = readAllStudents(records, teamSize);
         } catch (ArrayIndexOutOfBoundsException e) {
-            logger.severe("Team size does not match column count in records.");
-            throw new IllegalArgumentException("Team size does not match column count in records.");
+            logger.severe("StudentTeam size does not match column count in records.");
+            throw new IllegalArgumentException("StudentTeam size does not match column count in records.");
         }
 
 
@@ -72,28 +72,28 @@ public class TeamGenerator {
      * @param teamSize The preferred maximum size for a team.
      * @return A list of teams, most of which are of teamSize size.
      */
-    private static List<Team> generateAllValidTeams(Map<Integer, Student> studentMap, int teamSize) {
+    private static List<StudentTeam> generateAllValidTeams(Map<Integer, Student> studentMap, int teamSize) {
         List<Student> singleStudents = new ArrayList<>(studentMap.values());
-        List<Team> teams = new ArrayList<>();
+        List<StudentTeam> studentTeams = new ArrayList<>();
 
         int teamCount = 1;
         // For each student, try to make a team from its preferred partners.
         for (Map.Entry<Integer, Student> e : studentMap.entrySet()) {
-            Team t = e.getValue().getPreferredTeam(studentMap);
+            StudentTeam t = e.getValue().getPreferredTeam(studentMap);
             logger.finest("Checking if student's preferred team is valid: " + t.getStudents());
             // Check if the team is of a valid size, and is not a duplicate.
-            // Note that at this stage, singles are treated as teams of 1, and thus not valid for any teamSize > 1.
-            if (t.isValid(teamSize) && !teams.contains(t)) {
+            // Note that at this stage, singles are treated as studentTeams of 1, and thus not valid for any teamSize > 1.
+            if (t.isValid(teamSize) && !studentTeams.contains(t)) {
                 // Once we know this team is completely valid, we remove all the students in it from the list of singles.
                 t.setId(teamCount++);
                 singleStudents.removeAll(t.getStudents());
-                teams.add(t);
+                studentTeams.add(t);
                 logger.fine("Created team: " + t);
             }
         }
 
-        teams.addAll(mergeSingleStudents(singleStudents, teamSize, teamCount));
-        return teams;
+        studentTeams.addAll(mergeSingleStudents(singleStudents, teamSize, teamCount));
+        return studentTeams;
     }
 
     /**
@@ -104,10 +104,10 @@ public class TeamGenerator {
      * @param teamIndex The current number used in assigning an id to the team.
      * @return A list of teams comprising of single students.
      */
-    private static List<Team> mergeSingleStudents(List<Student> singleStudents, int teamSize, int teamIndex) {
-        List<Team> teams = new ArrayList<>();
+    private static List<StudentTeam> mergeSingleStudents(List<Student> singleStudents, int teamSize, int teamIndex) {
+        List<StudentTeam> studentTeams = new ArrayList<>();
         while (!singleStudents.isEmpty()) {
-            Team t = new Team();
+            StudentTeam t = new StudentTeam();
             t.setId(teamIndex++);
             logger.fine("Creating new team of single students: " + t);
             while (t.getStudentCount() < teamSize && !singleStudents.isEmpty()) {
@@ -115,10 +115,10 @@ public class TeamGenerator {
                 logger.finest("Single student: " + s);
                 t.addStudent(s);
             }
-            teams.add(t);
+            studentTeams.add(t);
             logger.fine("Created team: " + t);
         }
-        return teams;
+        return studentTeams;
     }
 
     /**

@@ -60,7 +60,7 @@ public class URLBuilder {
                 + this.organizationName
                 + '/'
                 + repoName
-                + "/git/refs/heads/master?acces_token="
+                + "/git/refs/heads/master?access_token="
                 + this.accessToken;
     }
 

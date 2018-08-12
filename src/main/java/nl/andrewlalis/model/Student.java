@@ -1,66 +1,34 @@
 package nl.andrewlalis.model;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Represents one student's github information.
  */
-public class Student {
-
-    /**
-     * The student's S-number.
-     */
-    private int number;
-
-    /**
-     * The student's name.
-     */
-    private String name;
-
-    /**
-     * The student's email.
-     */
-    private String emailAddress;
-
-    /**
-     * The student's github username.
-     */
-    private String githubUsername;
+public class Student extends Person {
 
     /**
      * A list of partners that the student has said that they would like to be partners with.
      */
     private List<Integer> preferredPartners;
 
+    /**
+     * Constructs a student similarly to a Person, but with an extra preferredPartners list.
+     * @param number The student's S-Number.
+     * @param name The student's name.
+     * @param emailAddress The student's email address.
+     * @param githubUsername The student's github username.
+     * @param preferredPartners A list of this student's preferred partners, as a list of integers representing the
+     *                          other students' numbers.
+     */
     public Student(int number, String name, String emailAddress, String githubUsername, List<Integer> preferredPartners) {
-        this.number = number;
-        this.name = name;
-        this.emailAddress = emailAddress;
-        this.githubUsername = githubUsername;
+        super(number, name, emailAddress, githubUsername);
         this.preferredPartners = preferredPartners;
     }
 
-    @Override
-    public String toString() {
-        return this.number + " - " + this.name + " - " + this.emailAddress + " - " + this.githubUsername;
-    }
-
-    public int getNumber() {
-        return number;
-    }
-
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public String getGithubUsername() {
-        return githubUsername;
-    }
-
     public List<Integer> getPreferredPartners() {
-        return preferredPartners;
+        return this.preferredPartners;
     }
 
     /**
@@ -68,23 +36,12 @@ public class Student {
      * @param studentMap A mapping from student number to student for all students who have signed up.
      * @return A team with unknown id, comprised of this student's preferred partners.
      */
-    public Team getPreferredTeam(Map<Integer, Student> studentMap) {
-        Team t = new Team();
+    public StudentTeam getPreferredTeam(Map<Integer, Student> studentMap) {
+        StudentTeam t = new StudentTeam();
         for (int partnerNumber : this.getPreferredPartners()) {
             t.addStudent(studentMap.get(partnerNumber));
         }
         t.addStudent(this);
         return t;
-    }
-
-    @Override
-    public boolean equals(Object s) {
-        if (!(s instanceof Student)) {
-            return false;
-        }
-        Student student = (Student) s;
-        return student.getNumber() == this.getNumber()
-                || student.getEmailAddress().equals(this.getEmailAddress())
-                || student.getGithubUsername().equals(this.getGithubUsername());
     }
 }
