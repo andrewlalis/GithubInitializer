@@ -8,6 +8,7 @@ import nl.andrewlalis.util.TeamGenerator;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +27,9 @@ public class Main {
         Map<String, String> userOptions = CommandLine.parseArgs(args);
 
         // Initialize logger.
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setLevel(Level.FINEST);
+        logger.addHandler(handler);
         try {
             Logging.setup(true); // TODO: Replace true with command line arg.
         } catch (IOException e) {
@@ -35,24 +39,41 @@ public class Main {
         logger.info("Initializer for Github Repositories in Educational Organizations.");
 
         // Get studentTeams from CSV file.
-        List<StudentTeam> studentTeams = null;
-        try {
-            studentTeams = TeamGenerator.generateFromCSV(
-                    userOptions.get("input"),
-                    Integer.parseInt(userOptions.get("teamsize"))
-            );
-            logger.info("Teams created: " + studentTeams);
-        } catch (IOException | ArrayIndexOutOfBoundsException e) {
-            logger.severe("Unable to generate studentTeams from CSV file, exiting.");
-            System.exit(1);
-        }
+        List<StudentTeam> studentTeams = getStudentTeamsFromCSV(userOptions.get("input"), Integer.parseInt(userOptions.get("teamsize")));
 
         Initializer initializer = new Initializer(
                 userOptions.get("organization"),
                 userOptions.get("token"),
-                "assignments_2018"
+                "assignments_2018",
+                "teaching-assistants",
+                "advoop_2018"
         );
-        initializer.initializeGithubRepos(studentTeams);
+
+        try {
+            initializer.initializeGithubRepos(studentTeams);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
+
+    /**
+     * Reads a list of students from a CSV file and compiles a list of teams based on their preferred partners.
+     * @param filename The name of the CSV file.
+     * @param teamSize The intended size of teams.
+     * @return A list of student teams.
+     */
+    private static List<StudentTeam> getStudentTeamsFromCSV(String filename, int teamSize) {
+        List<StudentTeam> studentTeams = null;
+        try {
+            studentTeams = TeamGenerator.generateFromCSV(filename, teamSize);
+            logger.info("Teams created: " + studentTeams);
+            return studentTeams;
+        } catch (IOException | ArrayIndexOutOfBoundsException e) {
+            logger.severe("Unable to generate studentTeams from CSV file, exiting.");
+            System.exit(1);
+            return null;
+        }
+    }
+
 }
