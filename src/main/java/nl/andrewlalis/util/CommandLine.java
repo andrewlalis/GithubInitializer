@@ -67,7 +67,7 @@ public class CommandLine {
         options.addOption(organizationInput);
 
         // The maximum team size.
-        Option teamSizeInput = new Option("s", "teamsize", true, "The maximum size of teams to generate.");
+        Option teamSizeInput = new Option("ts", "teamsize", true, "The maximum size of teams to generate.");
         teamSizeInput.setRequired(false);
         options.addOption(teamSizeInput);
 

@@ -1,6 +1,6 @@
 package nl.andrewlalis;
 
-import nl.andrewlalis.git_api.Initializer;
+import nl.andrewlalis.git_api.GithubManager;
 import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.util.Logging;
 import nl.andrewlalis.util.TeamGenerator;
@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,20 +29,25 @@ public class Main {
 
         // Initialize logger.
         ConsoleHandler handler = new ConsoleHandler();
-        handler.setLevel(Level.FINEST);
-        logger.addHandler(handler);
+        handler.setLevel(Level.INFO);
         try {
             Logging.setup(true); // TODO: Replace true with command line arg.
+            Handler[] handlers = logger.getHandlers();
+            for (Handler h : handlers) {
+                logger.removeHandler(h);
+            }
+            logger.setUseParentHandlers(false);
+            logger.addHandler(handler);
         } catch (IOException e) {
             logger.severe("Unable to save log to file.");
         }
 
-        logger.info("Initializer for Github Repositories in Educational Organizations.");
+        logger.info("GithubManager for Github Repositories in Educational Organizations.");
 
         // Get studentTeams from CSV file.
         List<StudentTeam> studentTeams = getStudentTeamsFromCSV(userOptions.get("input"), Integer.parseInt(userOptions.get("teamsize")));
 
-        Initializer initializer = new Initializer(
+        GithubManager githubManager = new GithubManager(
                 userOptions.get("organization"),
                 userOptions.get("token"),
                 "assignments_2018",
@@ -50,7 +56,8 @@ public class Main {
         );
 
         try {
-            initializer.initializeGithubRepos(studentTeams);
+            githubManager.initializeGithubRepos(studentTeams);
+            //githubManager.deleteAllRepositories();
         } catch (Exception e) {
             e.printStackTrace();
         }

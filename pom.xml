@@ -67,6 +67,12 @@
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+        <!-- Github API Object Library -->
+        <dependency>
+            <groupId>org.kohsuke</groupId>
+            <artifactId>github-api</artifactId>
+            <version>1.93</version>
+        </dependency>
     </dependencies>
     
 </project>

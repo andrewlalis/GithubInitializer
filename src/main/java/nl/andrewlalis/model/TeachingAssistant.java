@@ -1,5 +1,7 @@
 package nl.andrewlalis.model;
 
+import org.kohsuke.github.GHTeam;
+
 public class TeachingAssistant extends Person {
 
     /**

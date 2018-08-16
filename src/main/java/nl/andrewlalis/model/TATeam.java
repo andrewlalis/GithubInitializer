@@ -11,7 +11,6 @@ import java.util.List;
  * Represents a teaching assistant team, which is itself a 'team' in the organization. This class is used for parsing
  * json from requests to github to get a list of all teams in the organization.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class TATeam {
 
     private List<TeachingAssistant> teachingAssistants;
@@ -19,13 +18,11 @@ public class TATeam {
     /**
      * The team's display name.
      */
-    @JsonProperty("name")
     private String name;
 
     /**
      * The team's unique identifier.
      */
-    @JsonProperty("id")
     private int id;
 
     /**
@@ -33,8 +30,7 @@ public class TATeam {
      * @param name The name of the team.
      * @param id The unique identifier for this team.
      */
-    @JsonCreator
-    public TATeam(@JsonProperty("name") String name, @JsonProperty("id") int id) {
+    public TATeam(String name, int id) {
         this.name = name;
         this.id = id;
         this.teachingAssistants = new ArrayList<TeachingAssistant>();
