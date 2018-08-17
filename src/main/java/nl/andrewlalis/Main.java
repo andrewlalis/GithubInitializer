@@ -56,8 +56,8 @@ public class Main {
         );
 
         try {
-            githubManager.initializeGithubRepos(studentTeams);
-            //githubManager.deleteAllRepositories();
+            //githubManager.initializeGithubRepos(studentTeams);
+            //githubManager.archiveAllRepositories("team");
         } catch (Exception e) {
             e.printStackTrace();
         }

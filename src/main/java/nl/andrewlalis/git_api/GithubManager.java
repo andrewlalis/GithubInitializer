@@ -1,7 +1,14 @@
 package nl.andrewlalis.git_api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.kohsuke.github.*;
 
 import java.io.IOException;
@@ -14,16 +21,6 @@ import java.util.logging.Logger;
  * This class is responsible for initializing the Github repositories and setting permissions, adding teams, etc.
  */
 public class GithubManager {
-
-    /**
-     * The name of the organization to operate on.
-     */
-    private String organizationName;
-
-    /**
-     * The object which simplifies creating REST URL's for most of the requests.
-     */
-    private URLBuilder urlBuilder;
 
     /**
      * The assignments repository where students will get assignments from.
@@ -47,6 +44,7 @@ public class GithubManager {
      */
     private GitHub github;
     private GHOrganization organization;
+    private String accessToken;
 
     /**
      * The logger for outputting debug info.
@@ -57,15 +55,14 @@ public class GithubManager {
     }
 
     public GithubManager(String organizationName, String accessToken, String assignmentsRepo, String teachingAssistantsTeamName, String studentRepoPrefix) {
-        this.organizationName = organizationName;
         this.assignmentsRepoName = assignmentsRepo;
         this.teachingAssistantsTeamName = teachingAssistantsTeamName;
         this.studentRepoPrefix = studentRepoPrefix;
-        this.urlBuilder = new URLBuilder(organizationName, accessToken);
+        this.accessToken = accessToken;
 
         try {
             this.github = GitHub.connectUsingOAuth(accessToken);
-            this.organization = this.github.getOrganization(this.organizationName);
+            this.organization = this.github.getOrganization(organizationName);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -104,6 +101,13 @@ public class GithubManager {
      * @throws IOException If an HTTP request failed.
      */
     private void setupAssignmentsRepo(GHTeam allTeachingAssistants) throws IOException {
+        // Check if the repository already exists.
+        GHRepository existingRepo = this.organization.getRepository(this.assignmentsRepoName);
+        if (existingRepo != null) {
+            existingRepo.delete();
+            logger.fine("Deleted pre-existing assignments repository.");
+        }
+
         // Create the repository.
         GHCreateRepositoryBuilder builder = this.organization.createRepository(this.assignmentsRepoName);
         builder.description("Assignments repository for Advanced Object Oriented Programming");
@@ -113,6 +117,7 @@ public class GithubManager {
         builder.team(allTeachingAssistants);
         builder.gitignoreTemplate("Java");
         this.assignmentsRepo = builder.create();
+        logger.info("Created assignments repository.");
 
         // Protect the master branch.
         GHBranchProtectionBuilder protectionBuilder = this.assignmentsRepo.getBranch("master").enableProtection();
@@ -121,9 +126,11 @@ public class GithubManager {
         protectionBuilder.teamPushAccess(allTeachingAssistants);
         protectionBuilder.addRequiredChecks("ci/circleci");
         protectionBuilder.enable();
+        logger.fine("Protected master branch of assignments repository.");
 
         // Grant all teaching assistants write access.
         allTeachingAssistants.add(this.assignmentsRepo, GHOrganization.Permission.ADMIN);
+        logger.fine("Gave admin rights to all teaching assistants in team: " + allTeachingAssistants.getName());
     }
 
     /**
@@ -185,9 +192,9 @@ public class GithubManager {
      * @throws IOException if an error occurs with sending requests.
      */
     public void deleteAllRepositories() throws IOException {
-        Map<String, GHRepository> repoMap = this.organization.getRepositories();
-        for (Map.Entry<String, GHRepository> repoEntry : repoMap.entrySet()) {
-            repoEntry.getValue().delete();
+        List<GHRepository> repositories = this.organization.listRepositories().asList();
+        for (GHRepository repo : repositories) {
+            repo.delete();
         }
     }
 
@@ -195,8 +202,25 @@ public class GithubManager {
      * Archives all repositories whose name contains the given substring.
      * @param sub Any repository containing this substring will be archived.
      */
-    public void archiveAllRepositories(String sub) {
-
+    public void archiveAllRepositories(String sub) throws IOException {
+        List<GHRepository> repositories = this.organization.listRepositories().asList();
+        for (GHRepository repo : repositories) {
+            if (repo.getName().contains(sub)) {
+                HttpPatch patch = new HttpPatch("https://api.github.com/repos/" + repo.getFullName() + "?access_token=" + this.accessToken);
+                CloseableHttpClient client = HttpClientBuilder.create().build();
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode root = mapper.createObjectNode();
+                root.put("archived", true);
+                String json = mapper.writeValueAsString(root);
+                patch.setEntity(new StringEntity(json));
+                HttpResponse response = client.execute(patch);
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    throw new IOException("Could not archive repository: " + repo.getName() + ". Code: " + response.getStatusLine().getStatusCode());
+                }
+                logger.info("Archived repository: " + repo.getFullName());
+                // TODO: archive repository using Github Java API, instead of Apache HttpUtils.
+            }
+        }
     }
 
 }
