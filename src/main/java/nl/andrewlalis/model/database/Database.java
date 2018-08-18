@@ -123,7 +123,8 @@ public class Database {
             PreparedStatement stmt = this.connection.prepareStatement(sql);
             stmt.setInt(1, ta.getNumber());
             stmt.setInt(2, teamId);
-            return stmt.execute();
+            stmt.execute();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -155,7 +156,8 @@ public class Database {
             stmt.setInt(1, student.getNumber());
             stmt.setInt(2, teamId);
             stmt.setInt(3, student.getPreferredPartners().size() > 0 ? 1 : 0);
-            return stmt.execute();
+            stmt.execute();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
