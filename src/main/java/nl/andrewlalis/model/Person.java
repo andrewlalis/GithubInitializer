@@ -4,7 +4,7 @@ package nl.andrewlalis.model;
  * A generic object that students, teaching assistants, and professors can extend from. This covers all the basic
  * functionality that applies to anyone in the system.
  */
-public abstract class Person {
+public abstract class Person  {
 
     /**
      * The unique identification number for this person. (P- or S-Number)

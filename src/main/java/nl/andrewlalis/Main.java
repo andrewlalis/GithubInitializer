@@ -1,11 +1,10 @@
 package nl.andrewlalis;
 
-import nl.andrewlalis.database.Database;
+import nl.andrewlalis.model.database.Database;
 import nl.andrewlalis.git_api.GithubManager;
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.util.CommandLine;
-import nl.andrewlalis.util.FileUtils;
 import nl.andrewlalis.util.Logging;
 import nl.andrewlalis.util.TeamGenerator;
 

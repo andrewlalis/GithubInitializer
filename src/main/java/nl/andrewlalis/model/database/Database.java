@@ -1,11 +1,11 @@
-package nl.andrewlalis.database;
+package nl.andrewlalis.model.database;
 
 import nl.andrewlalis.model.Person;
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.TeachingAssistant;
-import nl.andrewlalis.util.FileUtils;
 
 import java.sql.*;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -53,18 +53,13 @@ public class Database {
      * @return True, if successful, false if not.
      */
     public boolean initialize() {
-        String sql = FileUtils.readStringFromFile("/sql/table_init.sql");
-        String[] commands = sql.split(";");
-        for (String command : commands) {
-            logger.finest("Executing command: " + command);
-            if (command.trim().length() > 1) {
-                try {
-                    PreparedStatement statement = this.connection.prepareStatement(command);
-                    statement.execute();
-                } catch (SQLException e) {
-                    logger.severe("SQLException: " + e.getErrorCode());
-                    return false;
-                }
+        List<PreparedStatement> statements = Utils.prepareStatementsFromFile("/sql/table_init.sql", this.connection);
+        for (PreparedStatement statement : statements) {
+            try {
+                statement.execute();
+            } catch (SQLException e) {
+                logger.severe("SQLException while executing prepared statement: " + statement.toString() + ". Code: " + e.getErrorCode());
+                return false;
             }
         }
         logger.fine("Database initialized.");

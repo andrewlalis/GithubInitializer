@@ -80,15 +80,15 @@ public class TeamGenerator {
         // For each student, try to make a team from its preferred partners.
         for (Map.Entry<Integer, Student> e : studentMap.entrySet()) {
             StudentTeam newTeam = e.getValue().getPreferredTeam(studentMap);
-            logger.finest("Checking if student's preferred team is valid: " + newTeam.getStudents());
+            logger.finest("Checking if student's preferred team is valid:\n" + newTeam);
             // Check if the team is of a valid size, and is not a duplicate.
             // Note that at this stage, singles are treated as studentTeams of 1, and thus not valid for any teamSize > 1.
             if (newTeam.isValid(teamSize) && !studentTeams.contains(newTeam)) {
                 // Once we know this team is completely valid, we remove all the students in it from the list of singles.
                 newTeam.setId(teamCount++);
-                singleStudents.removeAll(newTeam.getStudents());
+                singleStudents.removeAll(Arrays.asList(newTeam.getStudents()));
                 studentTeams.add(newTeam);
-                logger.fine("Created team: " + newTeam);
+                logger.fine("Created team:\n" + newTeam);
             }
         }
 
@@ -109,11 +109,11 @@ public class TeamGenerator {
         while (!singleStudents.isEmpty()) {
             StudentTeam t = new StudentTeam();
             t.setId(teamIndex++);
-            logger.fine("Creating new team of single students: " + t);
-            while (t.getStudentCount() < teamSize && !singleStudents.isEmpty()) {
+            logger.fine("Creating new team of single students:\n" + t);
+            while (t.memberCount() < teamSize && !singleStudents.isEmpty()) {
                 Student s = singleStudents.remove(0);
                 logger.finest("Single student: " + s);
-                t.addStudent(s);
+                t.addMember(s);
             }
             studentTeams.add(t);
             logger.fine("Created team: " + t);

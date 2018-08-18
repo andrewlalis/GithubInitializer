@@ -2,6 +2,7 @@ package nl.andrewlalis.git_api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
 import org.apache.http.HttpResponse;
@@ -88,7 +89,7 @@ public class GithubManager {
 
         StudentTeam t = new StudentTeam();
         Student s = new Student(3050831, "Andrew Lalis", "andrewlalisofficial@gmail.com", "andrewlalis", null);
-        t.addStudent(s);
+        t.addMember(s);
         t.setId(42);
 
         this.setupStudentTeam(t, teamAll);
@@ -99,6 +100,7 @@ public class GithubManager {
      * @param allTeachingAssistants A team consisting of all teaching assistants.
      * @throws IOException If an HTTP request failed.
      */
+    @SuppressWarnings("deprecation")
     private void setupAssignmentsRepo(GHTeam allTeachingAssistants) throws IOException {
         // Check if the repository already exists.
         GHRepository existingRepo = this.organization.getRepository(this.assignmentsRepoName);
@@ -139,10 +141,11 @@ public class GithubManager {
      * @param taTeam The team of teaching assistants that is responsible for these students.
      * @throws IOException If an HTTP request fails.
      */
+    @SuppressWarnings("deprecation")
     private void setupStudentTeam(StudentTeam team, GHTeam taTeam) throws IOException {
         String teamRepoName = team.generateUniqueName(this.studentRepoPrefix);
 
-        List<Student> students = team.getStudents();
+        Student[] students = team.getStudents();
         StringBuilder description = new StringBuilder("Group ");
         description.append(team.getId()).append(": ");
 

@@ -1,74 +1,22 @@
 package nl.andrewlalis.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * Represents one or more students' collective information.
  */
-public class StudentTeam {
-
-    /**
-     * The list of students in this team.
-     */
-    private List<Student> students;
-
-    /**
-     * The team identification number.
-     */
-    private int id;
+public class StudentTeam extends Team{
 
     public StudentTeam() {
-        this.students = new ArrayList<>();
-        this.id = -1;
+        super(-1);
     }
 
     /**
-     * Determines if a student is already included in this team.
-     * @param student A student.
-     * @return True if the student is in this team, false otherwise.
+     * Gets a list of students, casted from the original Person[].
+     * @return An array of Students.
      */
-    public boolean hasStudent(Student student) {
-        for (Student s : this.students) {
-            if (s.equals(student)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public int getStudentCount() {
-        return this.students.size();
-    }
-
-    public int getId() {
-        return this.id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setStudents(List<Student> students) {
-        this.students = students;
-    }
-
-    public List<Student> getStudents() {
-        return this.students;
-    }
-
-    /**
-     * Adds a student to this team.
-     * @param student The student to add.
-     * @return True if the student could be added, false otherwise.
-     */
-    public boolean addStudent(Student student) {
-        if (!this.hasStudent(student)) {
-            this.students.add(student);
-            return true;
-        } else {
-            return false;
-        }
+    public Student[] getStudents() {
+        return Arrays.copyOf(this.getMembers(), this.memberCount(), Student[].class);
     }
 
     /**
@@ -81,10 +29,9 @@ public class StudentTeam {
      * @return True if the team is valid, and false otherwise.
      */
     public boolean isValid(int teamSize) {
-        if (this.getStudentCount() == teamSize) {
-            List<Integer> encounteredIds = new ArrayList<>();
-            for (Student studentA : this.students) {
-                for (Student studentB : this.students) {
+        if (this.memberCount() == teamSize) {
+            for (Student studentA : this.getStudents()) {
+                for (Student studentB : this.getStudents()) {
                     if (!studentA.equals(studentB) && !studentA.getPreferredPartners().contains(studentB.getNumber())) {
                         return false;
                     }
@@ -105,48 +52,9 @@ public class StudentTeam {
     public String generateUniqueName(String prefix) {
         StringBuilder sb = new StringBuilder(prefix);
         sb.append("_team_").append(this.id);
-        for (Student s : this.students) {
+        for (Student s : (Student[]) this.getMembers()) {
             sb.append('_').append(s.getNumber());
         }
         return sb.toString();
-    }
-
-    /**
-     * Returns a pretty formatting of this team so that it can be viewed in the command line. This is mainly for
-     * debugging purposes.
-     * @return A string representing the team.
-     */
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("StudentTeam: ");
-        sb.append(this.id).append('\n');
-        for (Student s : this.students) {
-            sb.append('\t').append(s.toString()).append('\n');
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Determines if one team is equivalent to another. This is determined by if the two teams are comprised of the same
-     * students, in any order.
-     * @param o The object to compare to this team.
-     * @return True if the teams contain the same students, false otherwise.
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof StudentTeam) {
-            StudentTeam t = (StudentTeam) o;
-            if (t.getStudentCount() != this.getStudentCount()) {
-                return false;
-            }
-            for (Student s : this.students) {
-                if (!t.hasStudent(s)) {
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
     }
 }

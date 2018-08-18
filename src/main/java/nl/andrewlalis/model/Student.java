@@ -39,9 +39,9 @@ public class Student extends Person {
     public StudentTeam getPreferredTeam(Map<Integer, Student> studentMap) {
         StudentTeam t = new StudentTeam();
         for (int partnerNumber : this.getPreferredPartners()) {
-            t.addStudent(studentMap.get(partnerNumber));
+            t.addMember(studentMap.get(partnerNumber));
         }
-        t.addStudent(this);
+        t.addMember(this);
         return t;
     }
 }
