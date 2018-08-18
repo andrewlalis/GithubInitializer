@@ -1,19 +1,18 @@
 package nl.andrewlalis;
 
+import nl.andrewlalis.database.Database;
 import nl.andrewlalis.git_api.GithubManager;
+import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
+import nl.andrewlalis.util.CommandLine;
+import nl.andrewlalis.util.FileUtils;
 import nl.andrewlalis.util.Logging;
 import nl.andrewlalis.util.TeamGenerator;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import nl.andrewlalis.util.CommandLine;
 
 /**
  * Main program entry point.
@@ -28,16 +27,9 @@ public class Main {
         Map<String, String> userOptions = CommandLine.parseArgs(args);
 
         // Initialize logger.
-        ConsoleHandler handler = new ConsoleHandler();
-        handler.setLevel(Level.INFO);
         try {
             Logging.setup(true); // TODO: Replace true with command line arg.
-            Handler[] handlers = logger.getHandlers();
-            for (Handler h : handlers) {
-                logger.removeHandler(h);
-            }
-            logger.setUseParentHandlers(false);
-            logger.addHandler(handler);
+
         } catch (IOException e) {
             logger.severe("Unable to save log to file.");
         }
@@ -61,6 +53,16 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // Initialize database.
+        Database db = new Database("database/initializer.sqlite");
+        db.initialize();
+        for (StudentTeam team : studentTeams) {
+            for (Student student : team.getStudents()) {
+                db.storeStudent(student);
+            }
+        }
+
 
     }
 

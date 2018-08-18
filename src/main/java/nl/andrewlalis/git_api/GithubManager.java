@@ -14,7 +14,6 @@ import org.kohsuke.github.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -206,21 +205,30 @@ public class GithubManager {
         List<GHRepository> repositories = this.organization.listRepositories().asList();
         for (GHRepository repo : repositories) {
             if (repo.getName().contains(sub)) {
-                HttpPatch patch = new HttpPatch("https://api.github.com/repos/" + repo.getFullName() + "?access_token=" + this.accessToken);
-                CloseableHttpClient client = HttpClientBuilder.create().build();
-                ObjectMapper mapper = new ObjectMapper();
-                ObjectNode root = mapper.createObjectNode();
-                root.put("archived", true);
-                String json = mapper.writeValueAsString(root);
-                patch.setEntity(new StringEntity(json));
-                HttpResponse response = client.execute(patch);
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    throw new IOException("Could not archive repository: " + repo.getName() + ". Code: " + response.getStatusLine().getStatusCode());
-                }
-                logger.info("Archived repository: " + repo.getFullName());
-                // TODO: archive repository using Github Java API, instead of Apache HttpUtils.
+                archiveRepository(repo);
             }
         }
+    }
+
+    /**
+     * Archives a repository so that it can no longer be manipulated.
+     * TODO: Change to using Github API instead of Apache HttpUtils.
+     * @param repo The repository to archive.
+     * @throws IOException If an error occurs with the HTTP request.
+     */
+    public void archiveRepository(GHRepository repo) throws IOException {
+        HttpPatch patch = new HttpPatch("https://api.github.com/repos/" + repo.getFullName() + "?access_token=" + this.accessToken);
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode root = mapper.createObjectNode();
+        root.put("archived", true);
+        String json = mapper.writeValueAsString(root);
+        patch.setEntity(new StringEntity(json));
+        HttpResponse response = client.execute(patch);
+        if (response.getStatusLine().getStatusCode() != 200) {
+            throw new IOException("Could not archive repository: " + repo.getName() + ". Code: " + response.getStatusLine().getStatusCode());
+        }
+        logger.info("Archived repository: " + repo.getFullName());
     }
 
 }

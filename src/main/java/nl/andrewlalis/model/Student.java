@@ -20,7 +20,7 @@ public class Student extends Person {
      * @param emailAddress The student's email address.
      * @param githubUsername The student's github username.
      * @param preferredPartners A list of this student's preferred partners, as a list of integers representing the
-     *                          other students' numbers.
+     * other students' numbers.
      */
     public Student(int number, String name, String emailAddress, String githubUsername, List<Integer> preferredPartners) {
         super(number, name, emailAddress, githubUsername);

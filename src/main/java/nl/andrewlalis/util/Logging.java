@@ -14,16 +14,26 @@ public class Logging {
     public static void setup(boolean verbose) throws IOException {
         Logger logger = Logger.getGlobal();
 
-        if (verbose) {
-            logger.setLevel(Level.FINEST);
-        } else {
-            logger.setLevel(Level.INFO);
+        Handler[] handlers = logger.getHandlers();
+        for (Handler h : handlers) {
+            logger.removeHandler(h);
         }
+        logger.setUseParentHandlers(false);
+
+        ConsoleHandler handler = new ConsoleHandler();
+        if (verbose) {
+            handler.setLevel(Level.FINEST);
+        } else {
+            handler.setLevel(Level.INFO);
+        }
+
+        logger.addHandler(handler);
 
         outputFile = new FileHandler("log/latest.txt");
         formatter = new SimpleFormatter();
 
         outputFile.setFormatter(formatter);
+        outputFile.setLevel(Level.FINEST);
         logger.addHandler(outputFile);
 
     }
