@@ -42,7 +42,7 @@ public class Utils {
                 try {
                     statements.add(connection.prepareStatement(split));
                 } catch (SQLException e) {
-                    logger.severe("SQLException while preparing a statement:\n" + split + "\nError Code: " + e.getErrorCode());
+                    logger.severe("SQLException while preparing a statement:\n" + split + "\nError Code: " + e.getErrorCode() + '\n' + e.getMessage());
                 }
             }
         }

@@ -11,6 +11,7 @@ import nl.andrewlalis.util.TeamGenerator;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -75,7 +76,7 @@ public class Main {
         List<StudentTeam> studentTeams = null;
         try {
             studentTeams = TeamGenerator.generateFromCSV(filename, teamSize);
-            logger.info("Teams created: " + studentTeams);
+            logger.fine("Teams created:\n" + studentTeams);
             return studentTeams;
         } catch (IOException | ArrayIndexOutOfBoundsException e) {
             logger.severe("Unable to generate studentTeams from CSV file, exiting.");

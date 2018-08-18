@@ -33,7 +33,7 @@ public class TeamGenerator {
      * @throws IllegalArgumentException If an invalid teamsize is given.
      */
     public static List<StudentTeam> generateFromCSV(String filename, int teamSize) throws IOException, IllegalArgumentException {
-        logger.info("Generating teams of size " + teamSize);
+        logger.fine("Generating teams of size " + teamSize);
         if (teamSize < 1) {
             logger.severe("Invalid team size.");
             throw new IllegalArgumentException("StudentTeam size must be greater than or equal to 1. Got " + teamSize);
@@ -83,12 +83,22 @@ public class TeamGenerator {
             logger.finest("Checking if student's preferred team is valid:\n" + newTeam);
             // Check if the team is of a valid size, and is not a duplicate.
             // Note that at this stage, singles are treated as studentTeams of 1, and thus not valid for any teamSize > 1.
-            if (newTeam.isValid(teamSize) && !studentTeams.contains(newTeam)) {
-                // Once we know this team is completely valid, we remove all the students in it from the list of singles.
-                newTeam.setId(teamCount++);
-                singleStudents.removeAll(Arrays.asList(newTeam.getStudents()));
-                studentTeams.add(newTeam);
-                logger.fine("Created team:\n" + newTeam);
+            if (newTeam.isValid(teamSize)) {
+                // We know that the team is valid on its own, so now we check if it has members identical to any team already created.
+                boolean matchFound = false;
+                for (StudentTeam team : studentTeams) {
+                    if (newTeam.hasSameMembers(team)) {
+                        matchFound = true;
+                        break;
+                    }
+                }
+                if (!matchFound) {
+                    // Once we know this team is completely valid, we remove all the students in it from the list of singles.
+                    newTeam.setId(teamCount++);
+                    singleStudents.removeAll(Arrays.asList(newTeam.getStudents()));
+                    studentTeams.add(newTeam);
+                    logger.fine("Created team:\n" + newTeam);
+                }
             }
         }
 
@@ -116,7 +126,7 @@ public class TeamGenerator {
                 t.addMember(s);
             }
             studentTeams.add(t);
-            logger.fine("Created team: " + t);
+            logger.fine("Created team:\n" + t);
         }
         return studentTeams;
     }

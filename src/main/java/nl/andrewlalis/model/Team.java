@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * An abstract Team object from which both Teaching Assistant and Student teams can be built.
+ * An abstract Team object from which both Teaching Assistant and Student teams can be built. A Team consists of a list
+ * of members, and a unique identification number.
  */
 public abstract class Team {
 
@@ -131,9 +132,7 @@ public abstract class Team {
     public boolean equals(Object obj) {
         if (obj instanceof Team) {
             Team team = (Team) obj;
-            if (team.getId() == this.getId() && this.hasSameMembers(team)) {
-                return true;
-            }
+            return team.getId() == this.getId() && this.hasSameMembers(team);
         }
         return false;
     }
@@ -144,6 +143,7 @@ public abstract class Team {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append("Team of ").append(this.memberCount()).append(" members:\tID: ").append(this.id).append('\n');
         for (Person person : this.members) {
             sb.append(person.toString()).append('\n');
         }

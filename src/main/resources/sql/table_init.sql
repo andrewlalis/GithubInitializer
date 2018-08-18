@@ -10,11 +10,6 @@ CREATE TABLE IF NOT EXISTS person_types (
   name TEXT NOT NULL UNIQUE
 );
 
-INSERT INTO person_types (id, name)
-VALUES (0, 'student'),
-       (1, 'teaching-assistant'),
-       (2, 'professor');
-
 CREATE TABLE IF NOT EXISTS persons (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
@@ -32,12 +27,6 @@ CREATE TABLE IF NOT EXISTS team_types (
   name TEXT NOT NULL UNIQUE
 );
 
-INSERT INTO team_types (id, name)
-VALUES (0, 'student_team'),
-       (1, 'teaching_assistant_team'),
-       (2, 'all_teaching_assistants'),
-       (3, 'none');
-
 CREATE TABLE IF NOT EXISTS teams (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   team_type_id INTEGER NOT NULL,
@@ -45,10 +34,6 @@ CREATE TABLE IF NOT EXISTS teams (
     REFERENCES team_types(id)
     ON DELETE CASCADE
 );
-
-INSERT INTO teams (id, team_type_id)
-VALUES (0, 3), -- None team for all students or TA's without a team.
-       (1, 2); -- Team for all teaching assistants.
 
 CREATE TABLE IF NOT EXISTS teaching_assistant_teams (
   team_id INTEGER PRIMARY KEY,
@@ -106,11 +91,6 @@ CREATE TABLE IF NOT EXISTS error_types (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL UNIQUE
 );
-
-INSERT INTO error_types (id, name)
-VALUES (0, 'team_error'),
-       (1, 'person_error'),
-       (2, 'system_error');
 
 CREATE TABLE IF NOT EXISTS errors (
   id INTEGER PRIMARY KEY,

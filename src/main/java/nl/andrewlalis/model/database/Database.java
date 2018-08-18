@@ -49,12 +49,13 @@ public class Database {
     }
 
     /**
-     * Initializes the database from the table_init.sql script, which defines the table schema and starting data.
-     * @return True, if successful, false if not.
+     * Initializes the database from the table_init.sql script, which defines the table schema.
+     * Then, inserts some constant starter data from /sql/insert/types.sql.
+     * @return True if successful, false if not.
      */
     public boolean initialize() {
-        List<PreparedStatement> statements = Utils.prepareStatementsFromFile("/sql/table_init.sql", this.connection);
-        for (PreparedStatement statement : statements) {
+        List<PreparedStatement> tableStatements = Utils.prepareStatementsFromFile("/sql/table_init.sql", this.connection);
+        for (PreparedStatement statement : tableStatements) {
             try {
                 statement.execute();
             } catch (SQLException e) {
@@ -62,7 +63,17 @@ public class Database {
                 return false;
             }
         }
-        logger.fine("Database initialized.");
+        logger.fine("Database tables initialized.");
+        List<PreparedStatement> insertStatements = Utils.prepareStatementsFromFile("/sql/insert/types.sql", this.connection);
+        for (PreparedStatement statement : insertStatements) {
+            try {
+                statement.execute();
+            } catch (SQLException e) {
+                logger.severe("SQLException while inserting into table: " + statement.toString() + ". Code: " + e.getErrorCode());
+                return false;
+            }
+        }
+        logger.fine("Initial types inserted.");
         return true;
     }
 
