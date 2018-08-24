@@ -3,6 +3,7 @@ package nl.andrewlalis.model.database;
 import nl.andrewlalis.model.Person;
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.TeachingAssistant;
+import nl.andrewlalis.model.Team;
 
 import java.sql.*;
 import java.util.List;
@@ -85,6 +86,7 @@ public class Database {
      */
     private boolean storePerson(Person person, int personType) {
         try {
+            logger.finest("Storing person: " + person);
             String sql = "INSERT INTO persons (id, name, email_address, github_username, person_type_id) VALUES (?, ?, ?, ?, ?);";
             PreparedStatement stmt = this.connection.prepareStatement(sql);
             stmt.setInt(1, person.getNumber());
@@ -92,9 +94,10 @@ public class Database {
             stmt.setString(3, person.getEmailAddress());
             stmt.setString(4, person.getGithubUsername());
             stmt.setInt(5, personType);
-            return stmt.execute();
+            stmt.execute();
+            return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.severe("SQLException while inserting Person: " + person + '\n' + e.getMessage());
             return false;
         }
     }
@@ -132,6 +135,26 @@ public class Database {
     }
 
     /**
+     * Stores a team in the database.
+     * @param team The team to store.
+     * @param type The type of team that this is.
+     * @return True if successful, false otherwise.
+     */
+    public boolean storeTeam(Team team, int type) {
+        try {
+            String sql = "INSERT INTO teams (id, team_type_id) VALUES (?, ?);";
+            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            stmt.setInt(1, team.getId());
+            stmt.setInt(2, type);
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            logger.severe("SQLException while inserting team: " + team + '\n' + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Stores a student without a team.
      * @param student The student to store.
      * @return True if successful, false otherwise.
@@ -147,6 +170,7 @@ public class Database {
      * @return True if the operation was successful, false otherwise.
      */
     public boolean storeStudent(Student student, int teamId) {
+        logger.finest("Storing student: " + student);
         if (!storePerson(student, PERSON_TYPE_STUDENT)) {
             return false;
         }

@@ -20,10 +20,12 @@ public class Logging {
         outputFile.setFormatter(formatter);
         outputFile.setLevel(Level.FINEST);
 
-        Handler systemOut = new ConsoleHandler();
-        systemOut.setLevel(Level.ALL);
+        if (verbose) {
+            Handler systemOut = new ConsoleHandler();
+            systemOut.setLevel(Level.ALL);
 
-        //logger.addHandler(systemOut);
+            logger.addHandler(systemOut);
+        }
         logger.addHandler(outputFile);
         logger.setLevel(Level.ALL);
 
