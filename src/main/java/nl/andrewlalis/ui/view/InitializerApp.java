@@ -1,12 +1,11 @@
 package nl.andrewlalis.ui.view;
 
-import nl.andrewlalis.ui.control.CommandFieldKeyListener;
+import nl.andrewlalis.ui.control.command.CommandExecutor;
+import nl.andrewlalis.ui.control.listeners.CommandFieldKeyListener;
 import nl.andrewlalis.ui.control.OutputTextHandler;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.logging.Logger;
 
 /**
@@ -24,14 +23,29 @@ public class InitializerApp extends JFrame {
      */
     private static final Dimension SIZE = new Dimension(800, 600);
 
+    /**
+     * The pane on which general purpose program output is written.
+     */
     private OutputTextPane outputTextPane;
 
-    public InitializerApp() {
+    /**
+     * The executor responsible for performing meaningful actions.
+     */
+    private CommandExecutor executor;
+
+    public InitializerApp(CommandExecutor executor) {
+        this.executor = executor;
+
+        // UI initialization.
         this.initFrame();
     }
 
-    public void printMessage() {
-
+    /**
+     * Begins showing the application
+     */
+    public void begin() {
+        this.pack();
+        this.setVisible(true);
     }
 
     /**
@@ -57,9 +71,7 @@ public class InitializerApp extends JFrame {
 
         this.setContentPane(mainPanel);
 
-        this.pack();
         this.initLoggingHandler();
-        this.setVisible(true);
     }
 
     /**
@@ -77,7 +89,7 @@ public class InitializerApp extends JFrame {
         textEnterPanel.setBorder(BorderFactory.createLoweredBevelBorder());
         textEnterPanel.add(new JLabel("Command:"), BorderLayout.WEST);
         JTextField commandField = new JTextField();
-        commandField.addKeyListener(new CommandFieldKeyListener());
+        commandField.addKeyListener(new CommandFieldKeyListener(this.executor));
         textEnterPanel.add(commandField, BorderLayout.CENTER);
         // Top Label
         JLabel commandPanelLabel = new JLabel("Program output", SwingConstants.CENTER);

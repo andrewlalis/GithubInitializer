@@ -4,6 +4,8 @@ import nl.andrewlalis.model.database.Database;
 import nl.andrewlalis.git_api.GithubManager;
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
+import nl.andrewlalis.ui.control.command.CommandExecutor;
+import nl.andrewlalis.ui.control.command.Executable;
 import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.util.CommandLine;
 import nl.andrewlalis.util.Logging;
@@ -36,8 +38,16 @@ public class Main {
             logger.severe("Unable to save log to file.");
         }
 
+        CommandExecutor executor = new CommandExecutor();
+        executor.registerCommand("test", args1 -> {
+            System.out.println("TESTING");
+            return true;
+        });
+
         // Initialize User Interface.
-        InitializerApp app = new InitializerApp();
+        InitializerApp app = new InitializerApp(executor);
+
+        app.begin();
 
         logger.info("GithubManager for Github Repositories in Educational Organizations.");
 

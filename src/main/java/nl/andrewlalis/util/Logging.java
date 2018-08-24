@@ -14,7 +14,7 @@ public class Logging {
     public static void setup(boolean verbose) throws IOException {
         Logger logger = Logger.getGlobal();
 
-        outputFile = new FileHandler("log/latest.txt");
+        outputFile = new FileHandler("log/latest.log");
         formatter = new SimpleFormatter();
 
         outputFile.setFormatter(formatter);

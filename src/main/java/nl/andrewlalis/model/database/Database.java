@@ -5,7 +5,10 @@ import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.TeachingAssistant;
 import nl.andrewlalis.model.Team;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Logger;
 
