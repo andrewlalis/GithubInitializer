@@ -6,6 +6,7 @@ import nl.andrewlalis.ui.control.OutputTextHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -27,6 +28,13 @@ public class InitializerApp extends JFrame {
      * The pane on which general purpose program output is written.
      */
     private OutputTextPane outputTextPane;
+
+    private JTextField organizationField = new JTextField();
+    private JTextField accessTokenField = new JTextField();
+    private JTextField assignmentsRepoField = new JTextField();
+    private JTextField teachingAssistantsField = new JTextField();
+    private JTextField studentRepoField = new JTextField();
+    private JTextField teamSizeField = new JTextField();
 
     /**
      * The executor responsible for performing meaningful actions.
@@ -53,7 +61,9 @@ public class InitializerApp extends JFrame {
      */
     private void initLoggingHandler() {
         Logger logger = Logger.getGlobal();
-        logger.addHandler(new OutputTextHandler(this.outputTextPane));
+        OutputTextHandler handler = new OutputTextHandler(this.outputTextPane);
+        handler.setLevel(Level.FINE);
+        logger.addHandler(handler);
     }
 
     /**
@@ -68,10 +78,40 @@ public class InitializerApp extends JFrame {
 
         mainPanel.add(this.initCommandPanel(), BorderLayout.CENTER);
         mainPanel.add(this.initRepoPanel(), BorderLayout.WEST);
+        mainPanel.add(this.initGithubManagerPanel(), BorderLayout.EAST);
 
         this.setContentPane(mainPanel);
 
         this.initLoggingHandler();
+    }
+
+    /**
+     * @return A JPanel containing input for all fields needed to connect to github, plus some commonly used buttons
+     * which perform actions, as shortcuts for command actions.
+     */
+    private JPanel initGithubManagerPanel() {
+        JPanel githubManagerPanel = new JPanel(new BorderLayout());
+
+        // Information input (org name, key, etc.)
+        JPanel infoInputPanel = new JPanel();
+        infoInputPanel.setLayout(new BoxLayout(infoInputPanel, BoxLayout.PAGE_AXIS));
+
+        infoInputPanel.add(generateTextFieldPanel("Organization Name", this.organizationField));
+        this.organizationField.setText("InitializerTesting");
+        infoInputPanel.add(generateTextFieldPanel("Access Token", this.accessTokenField));
+        this.accessTokenField.setText("d3699963f23cee85fe44c42f66057acc98c9ec7a");
+        infoInputPanel.add(generateTextFieldPanel("Assignments Repo Name", this.assignmentsRepoField));
+        this.assignmentsRepoField.setText("assignments_2018");
+        infoInputPanel.add(generateTextFieldPanel("TA-All Team Name", this.teachingAssistantsField));
+        this.teachingAssistantsField.setText("teaching-assistants");
+        infoInputPanel.add(generateTextFieldPanel("Student Repo Prefix", this.studentRepoField));
+        this.studentRepoField.setText("advoop_2018");
+        infoInputPanel.add(generateTextFieldPanel("Team Size", this.teamSizeField));
+        this.teamSizeField.setText("2");
+
+        githubManagerPanel.add(infoInputPanel, BorderLayout.NORTH);
+
+        return githubManagerPanel;
     }
 
     /**
@@ -83,7 +123,7 @@ public class InitializerApp extends JFrame {
         this.outputTextPane = new OutputTextPane();
         JScrollPane scrollPane = new JScrollPane(this.outputTextPane);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         // Text enter field and label.
         JPanel textEnterPanel = new JPanel(new BorderLayout());
         textEnterPanel.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -109,6 +149,20 @@ public class InitializerApp extends JFrame {
         repoPanel.add(new JLabel("Repositories"));
         repoPanel.add(new JList());
         return repoPanel;
+    }
+
+    /**
+     * Generates a text input field panel.
+     * @param labelText The text for the label above the panel.
+     * @param textField A reference to the text field that is used in the panel.
+     * @return A JPanel containing the label and text field.
+     */
+    private JPanel generateTextFieldPanel(String labelText, JTextField textField) {
+        JPanel newPanel = new JPanel(new BorderLayout());
+        newPanel.add(new JLabel(labelText), BorderLayout.NORTH);
+        newPanel.add(textField);
+        newPanel.setBorder(BorderFactory.createEmptyBorder(5, 2, 5, 2));
+        return newPanel;
     }
 
 }

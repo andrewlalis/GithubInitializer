@@ -8,6 +8,9 @@ import java.util.Date;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
+/**
+ * A custom handler for printing log messages to the user interface text output pane.
+ */
 public class OutputTextHandler extends Handler {
 
     /**

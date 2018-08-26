@@ -15,7 +15,7 @@ public class CommandFieldKeyListener implements KeyListener {
     /**
      * This is responsible for parsing and running entered commands.
      */
-    CommandExecutor executor;
+    private CommandExecutor executor;
 
     public CommandFieldKeyListener(CommandExecutor executor) {
         this.executor = executor;

@@ -47,13 +47,13 @@ public class FileUtils {
      * @return A list of student teams.
      */
     public static List<StudentTeam> getStudentTeamsFromCSV(String filename, int teamSize) {
-        List<StudentTeam> studentTeams = null;
+        List<StudentTeam> studentTeams;
         try {
             studentTeams = TeamGenerator.generateFromCSV(filename, teamSize);
             logger.fine("Teams created:\n" + studentTeams);
             return studentTeams;
         } catch (IOException | ArrayIndexOutOfBoundsException e) {
-            logger.severe("Unable to generate studentTeams from CSV file, exiting.");
+            logger.severe("Unable to generate studentTeams from CSV file, exiting. " + e.getMessage());
             System.exit(1);
             return null;
         }

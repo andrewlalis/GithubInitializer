@@ -10,8 +10,8 @@ VALUES (0, 'student_team'),
        (3, 'none');
 
 INSERT INTO teams (id, team_type_id)
-VALUES (0, 3), -- None team for all students or TA's without a team.
-       (1, 2); -- Team for all teaching assistants.
+VALUES (1000000, 3), -- None team for all students or TA's without a team.
+       (1000001, 2); -- Team for all teaching assistants.
 
 INSERT INTO error_types (id, name)
 VALUES (0, 'team_error'),

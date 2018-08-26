@@ -52,8 +52,21 @@ public class StudentTeam extends Team{
     public String generateUniqueName(String prefix) {
         StringBuilder sb = new StringBuilder(prefix);
         sb.append("_team_").append(this.id);
-        for (Student s : (Student[]) this.getMembers()) {
+        for (Student s : this.getStudents()) {
             sb.append('_').append(s.getNumber());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Generates a description for the repository, based on the students' names and group number.
+     * @return A description for the students' repository.
+     */
+    public String generateRepoDescription() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Group ").append(this.id).append(": ");
+        for (Student s : this.getStudents()) {
+            sb.append(s.getName()).append(' ');
         }
         return sb.toString();
     }

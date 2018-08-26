@@ -1,5 +1,6 @@
 package nl.andrewlalis.ui.control.command;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -33,6 +34,7 @@ public class CommandExecutor {
      */
     public void registerCommand(String commandName, Executable executable) {
         this.commands.put(commandName, executable);
+        logger.fine("Registered command: " + commandName);
     }
 
     /**
@@ -40,7 +42,7 @@ public class CommandExecutor {
      * @param commandString The String command and any arguments that go with it.
      */
     public void executeString(String commandString) {
-        String[] words = commandString.trim().toLowerCase().split(" ");
+        String[] words = commandString.trim().split(" ");
         if (words.length < 1) {
             logger.warning("No command supplied.");
             return;
@@ -50,9 +52,19 @@ public class CommandExecutor {
         if (words.length > 1) {
             System.arraycopy(words, 1, args, 0, words.length - 1);
         }
+        this.executeCommand(commandName, args);
+    }
+
+    /**
+     * Executes a command with the given name, and given arguments.
+     * @param commandName The name of the command. A command must be registered using registerCommand before it can be
+     *                    called here.
+     * @param args The list of arguments to provide to the command as needed by the executable that was registered.
+     */
+    public void executeCommand(String commandName, String[] args) {
         if (this.commands.containsKey(commandName)) {
+            logger.info(commandName + ' ' + Arrays.toString(args));
             this.commands.get(commandName).execute(args);
-            logger.info(commandString);
         } else {
             logger.warning(commandName + " is not a valid command.");
         }

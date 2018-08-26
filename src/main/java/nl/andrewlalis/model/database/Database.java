@@ -1,9 +1,6 @@
 package nl.andrewlalis.model.database;
 
-import nl.andrewlalis.model.Person;
-import nl.andrewlalis.model.Student;
-import nl.andrewlalis.model.TeachingAssistant;
-import nl.andrewlalis.model.Team;
+import nl.andrewlalis.model.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -24,8 +21,8 @@ public class Database {
     private static final int TEAM_TYPE_TA = 1;
     private static final int TEAM_TYPE_TA_ALL = 2;
 
-    private static final int TEAM_NONE = 0;
-    private static final int TEAM_TA_ALL = 1;
+    private static final int TEAM_NONE = 1000000;
+    private static final int TEAM_TA_ALL = 1000001;
 
     private static final int ERROR_TYPE_TEAM = 0;
     private static final int ERROR_TYPE_PERSON = 1;
@@ -155,6 +152,25 @@ public class Database {
             logger.severe("SQLException while inserting team: " + team + '\n' + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Stores a list of student teams in the database.
+     * @param teams The list of teams to store.
+     * @return True if successful, or false if an error occurred.
+     */
+    public boolean storeStudentTeams(List<StudentTeam> teams) {
+        for (StudentTeam team : teams) {
+            if (!this.storeTeam(team, TEAM_TYPE_STUDENT)) {
+                return false;
+            }
+            for (Student student : team.getStudents()) {
+                if (!this.storeStudent(student, team.getId())) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

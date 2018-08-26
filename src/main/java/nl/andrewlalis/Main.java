@@ -6,6 +6,8 @@ import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.ui.control.command.CommandExecutor;
 import nl.andrewlalis.ui.control.command.Executable;
+import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
+import nl.andrewlalis.ui.control.command.executables.ReadStudentsFileToDB;
 import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.util.CommandLine;
 import nl.andrewlalis.util.Logging;
@@ -38,18 +40,26 @@ public class Main {
             logger.severe("Unable to save log to file.");
         }
 
+        // Command executor which will be used by all actions the user can do.
         CommandExecutor executor = new CommandExecutor();
+
+        // Initialize User Interface.
+        InitializerApp app = new InitializerApp(executor);
+        app.begin();
+
+        Database db = new Database("database/initializer.sqlite");
+        db.initialize();
+
         executor.registerCommand("test", args1 -> {
             System.out.println("TESTING");
             return true;
         });
+        executor.registerCommand("readstudents", new ReadStudentsFileToDB(db));
+        executor.registerCommand("archiveall", new ArchiveRepos());
 
-        // Initialize User Interface.
-        InitializerApp app = new InitializerApp(executor);
+        logger.info("GithubManager for Github Repositories in Educational Organizations. Program initialized.");
 
-        app.begin();
 
-        logger.info("GithubManager for Github Repositories in Educational Organizations.");
 
         // Get studentTeams from CSV file.
 //        List<StudentTeam> studentTeams = getStudentTeamsFromCSV(userOptions.get("input"), Integer.parseInt(userOptions.get("teamsize")));
@@ -68,17 +78,6 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        // Initialize database.
-//        Database db = new Database("database/initializer.sqlite");
-//        db.initialize();
-//        for (StudentTeam team : studentTeams) {
-//            for (Student student : team.getStudents()) {
-//                db.storeStudent(student);
-//            }
-//        }
-
-
     }
 
 

@@ -1,8 +1,7 @@
 package nl.andrewlalis.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.kohsuke.github.GHOrganization;
+import org.kohsuke.github.GHTeam;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +23,11 @@ public class TATeam {
      * The team's unique identifier.
      */
     private int id;
+
+    /**
+     * The Github team associated with this team.
+     */
+    private GHTeam githubTeam;
 
     /**
      * Constructs a team without any teaching assistant members.
@@ -58,4 +62,11 @@ public class TATeam {
         return this.name;
     }
 
+    public GHTeam getGithubTeam() {
+        return this.githubTeam;
+    }
+
+    public void setGithubTeam(GHTeam team) {
+        this.githubTeam = team;
+    }
 }

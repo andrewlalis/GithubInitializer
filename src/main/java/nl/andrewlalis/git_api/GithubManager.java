@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
+import nl.andrewlalis.model.TATeam;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.StringEntity;
@@ -26,18 +27,6 @@ public class GithubManager {
      * The assignments repository where students will get assignments from.
      */
     private GHRepository assignmentsRepo;
-    private String assignmentsRepoName;
-
-    /**
-     * The name of the team which contains all teaching assistants.
-     */
-    private String teachingAssistantsTeamName;
-
-    /**
-     * The prefix used to prepend the names of student repositories.
-     * Should ideally contain the current school year.
-     */
-    private String studentRepoPrefix;
 
     /**
      * Github object for API interactions.
@@ -54,12 +43,8 @@ public class GithubManager {
         logger.setParent(Logger.getGlobal());
     }
 
-    public GithubManager(String organizationName, String accessToken, String assignmentsRepo, String teachingAssistantsTeamName, String studentRepoPrefix) {
-        this.assignmentsRepoName = assignmentsRepo;
-        this.teachingAssistantsTeamName = teachingAssistantsTeamName;
-        this.studentRepoPrefix = studentRepoPrefix;
+    public GithubManager(String organizationName, String accessToken) {
         this.accessToken = accessToken;
-
         try {
             this.github = GitHub.connectUsingOAuth(accessToken);
             this.organization = this.github.getOrganization(organizationName);
@@ -80,57 +65,59 @@ public class GithubManager {
      * - adds students to repository
      * - adds all students to assignments repository.
      * @param studentTeams The list of student studentTeams.
+     * @param teamAll The team of all teaching assistants.
+     * @param assignmentsRepoName The name of the assignments repo.
      * @throws Exception If an error occurs while initializing the github repositories.
      */
-    public void initializeGithubRepos(List<StudentTeam> studentTeams) throws Exception {
-        GHTeam teamAll = this.organization.getTeamByName(this.teachingAssistantsTeamName);
-
-        this.setupAssignmentsRepo(teamAll);
+    public void initializeGithubRepos(List<StudentTeam> studentTeams, TATeam teamAll, String assignmentsRepoName) throws Exception {
+        this.setupAssignmentsRepo(assignmentsRepoName, "fuck the police", teamAll);
 
         StudentTeam t = new StudentTeam();
         Student s = new Student(3050831, "Andrew Lalis", "andrewlalisofficial@gmail.com", "andrewlalis", null);
         t.addMember(s);
         t.setId(42);
 
-        this.setupStudentTeam(t, teamAll);
+        this.setupStudentTeam(t, teamAll, "advoop_2018");
+        // TODO: Finish this method.
     }
 
     /**
      * Sets up the organization's assignments repository, and grants permissions to all teaching assistants.
+     * @param assignmentsRepoName The name of the assignments repository.
+     * @param description The description of the repository.
      * @param allTeachingAssistants A team consisting of all teaching assistants.
      * @throws IOException If an HTTP request failed.
      */
-    @SuppressWarnings("deprecation")
-    private void setupAssignmentsRepo(GHTeam allTeachingAssistants) throws IOException {
+    private void setupAssignmentsRepo(String assignmentsRepoName, String description, TATeam allTeachingAssistants) throws IOException {
         // Check if the repository already exists.
-        GHRepository existingRepo = this.organization.getRepository(this.assignmentsRepoName);
+        GHRepository existingRepo = this.organization.getRepository(assignmentsRepoName);
         if (existingRepo != null) {
             existingRepo.delete();
             logger.fine("Deleted pre-existing assignments repository.");
         }
 
         // Create the repository.
-        GHCreateRepositoryBuilder builder = this.organization.createRepository(this.assignmentsRepoName);
+        GHCreateRepositoryBuilder builder = this.organization.createRepository(assignmentsRepoName);
         builder.description("Assignments repository for Advanced Object Oriented Programming");
         builder.wiki(false);
         builder.issues(true);
         builder.private_(false); // TODO: Make this true for production.
-        builder.team(allTeachingAssistants);
+        builder.team(allTeachingAssistants.getGithubTeam());
         builder.gitignoreTemplate("Java");
         this.assignmentsRepo = builder.create();
         logger.info("Created assignments repository.");
 
-        // Protect the master branch.
-        GHBranchProtectionBuilder protectionBuilder = this.assignmentsRepo.getBranch("master").enableProtection();
-        protectionBuilder.includeAdmins(false);
-        protectionBuilder.restrictPushAccess();
-        protectionBuilder.teamPushAccess(allTeachingAssistants);
-        protectionBuilder.addRequiredChecks("ci/circleci");
-        protectionBuilder.enable();
-        logger.fine("Protected master branch of assignments repository.");
+        this.assignmentsRepo = this.createRepository(assignmentsRepoName, allTeachingAssistants, description, false, true, false);
+
+        if (this.assignmentsRepo == null) {
+            logger.severe("Could not create assignments repository.");
+            return;
+        }
+
+        this.protectMasterBranch(this.assignmentsRepo, allTeachingAssistants);
 
         // Grant all teaching assistants write access.
-        allTeachingAssistants.add(this.assignmentsRepo, GHOrganization.Permission.ADMIN);
+        allTeachingAssistants.getGithubTeam().add(this.assignmentsRepo, GHOrganization.Permission.ADMIN);
         logger.fine("Gave admin rights to all teaching assistants in team: " + allTeachingAssistants.getName());
     }
 
@@ -139,44 +126,27 @@ public class GithubManager {
      * repository as well.
      * @param team The student team to set up.
      * @param taTeam The team of teaching assistants that is responsible for these students.
+     * @param prefix The prefix to append to the front of the repo name.
      * @throws IOException If an HTTP request fails.
      */
-    @SuppressWarnings("deprecation")
-    private void setupStudentTeam(StudentTeam team, GHTeam taTeam) throws IOException {
-        String teamRepoName = team.generateUniqueName(this.studentRepoPrefix);
-
-        Student[] students = team.getStudents();
-        StringBuilder description = new StringBuilder("Group ");
-        description.append(team.getId()).append(": ");
-
-        for (Student s : students) {
-            description.append(s.getName()).append(' ');
+    private void setupStudentTeam(StudentTeam team, TATeam taTeam, String prefix) throws IOException {
+        // First check that the assignments repo exists, otherwise no invitations can be sent.
+        if (this.assignmentsRepo == null) {
+            logger.warning("Assignments repository must be created before student repositories.");
+            return;
         }
 
-        GHCreateRepositoryBuilder builder = this.organization.createRepository(teamRepoName);
-        builder.team(taTeam);
-        builder.wiki(false);
-        builder.issues(true);
-        builder.description(description.toString());
-        builder.gitignoreTemplate("Java");
-        builder.private_(false); // TODO: Change this to true for production
-        GHRepository repo = builder.create();
-        logger.info("Created repository: " + repo.getName());
+        GHRepository repo = this.createRepository(team.generateUniqueName(prefix), taTeam, team.generateRepoDescription(), false, true, false);
 
-        // Protect the master branch.
-        GHBranchProtectionBuilder protectionBuilder = repo.getBranch("master").enableProtection();
-        protectionBuilder.includeAdmins(false);
-        protectionBuilder.teamPushAccess(taTeam);
-        protectionBuilder.addRequiredChecks("ci/circleci");
-        protectionBuilder.enable();
-        logger.fine("Protected master branch of repository: " + repo.getName());
+        if (repo == null) {
+            logger.severe("Repository for student team " + team.getId() + " could not be created.");
+            return;
+        }
 
-        // Create development branch.
-        String sha1 = repo.getBranch(repo.getDefaultBranch()).getSHA1();
-        repo.createRef("refs/heads/development", sha1);
-        logger.fine("Created development branch of repository: " + repo.getName());
+        this.protectMasterBranch(repo, taTeam);
+        this.createDevelopmentBranch(repo);
 
-        taTeam.add(repo, GHOrganization.Permission.ADMIN);
+        taTeam.getGithubTeam().add(repo, GHOrganization.Permission.ADMIN);
         logger.fine("Added team " + taTeam.getName() + " as admin to repository: " + repo.getName());
 
         List<GHUser> users = new ArrayList<>();
@@ -232,6 +202,70 @@ public class GithubManager {
             throw new IOException("Could not archive repository: " + repo.getName() + ". Code: " + response.getStatusLine().getStatusCode());
         }
         logger.info("Archived repository: " + repo.getFullName());
+    }
+
+    /**
+     * Protects the master branch of a given repository, and gives admin rights to the given team.
+     * @param repo The repository to protect the master branch of.
+     * @param team The team which gets admin rights to the master branch.
+     */
+    @SuppressWarnings("deprecation")
+    private void protectMasterBranch(GHRepository repo, TATeam team) {
+        try {
+            GHBranchProtectionBuilder protectionBuilder = repo.getBranch("master").enableProtection();
+            protectionBuilder.includeAdmins(false);
+            protectionBuilder.restrictPushAccess();
+            protectionBuilder.teamPushAccess(team.getGithubTeam());
+            protectionBuilder.addRequiredChecks("ci/circleci");
+            protectionBuilder.enable();
+            logger.fine("Protected master branch of repository: " + repo.getName());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Creates a development branch for the given repository.
+     * @param repo The repository to create a development branch for.
+     */
+    private void createDevelopmentBranch(GHRepository repo) {
+        try {
+            String sha1 = repo.getBranch(repo.getDefaultBranch()).getSHA1();
+            repo.createRef("refs/heads/development", sha1);
+            logger.fine("Created development branch of repository: " + repo.getName());
+        } catch (IOException e) {
+            logger.severe("Could not create development branch for repository: " + repo.getName() + '\n' + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Creates a new github repository.
+     * @param name The name of the repository.
+     * @param taTeam The team to give admin rights.
+     * @param description The description of the repository.
+     * @param hasWiki Whether the repo has a wiki enabled.
+     * @param hasIssues Whether the repo has issues enabled.
+     * @param isPrivate Whether or not the repository is private.
+     * @return The repository that was created, or
+     */
+    private GHRepository createRepository(String name, TATeam taTeam, String description, boolean hasWiki, boolean hasIssues, boolean isPrivate){
+        try {
+            GHCreateRepositoryBuilder builder = this.organization.createRepository(name);
+            builder.team(taTeam.getGithubTeam());
+            builder.wiki(hasWiki);
+            builder.issues(hasIssues);
+            builder.description(description);
+            builder.gitignoreTemplate("Java");
+            builder.private_(isPrivate); // TODO: Change this to true for production
+            GHRepository repo = builder.create();
+            logger.fine("Created repository: " + repo.getName());
+            return repo;
+        } catch (IOException e) {
+            logger.severe("Could not create repository: " + name + '\n' + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }
