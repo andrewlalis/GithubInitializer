@@ -2,7 +2,6 @@ package nl.andrewlalis.git_api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.model.TATeam;

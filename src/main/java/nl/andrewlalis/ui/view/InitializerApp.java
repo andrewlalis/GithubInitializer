@@ -99,7 +99,7 @@ public class InitializerApp extends JFrame {
         infoInputPanel.add(generateTextFieldPanel("Organization Name", this.organizationField));
         this.organizationField.setText("InitializerTesting");
         infoInputPanel.add(generateTextFieldPanel("Access Token", this.accessTokenField));
-        this.accessTokenField.setText("d3699963f23cee85fe44c42f66057acc98c9ec7a");
+        this.accessTokenField.setText("haha get your own");
         infoInputPanel.add(generateTextFieldPanel("Assignments Repo Name", this.assignmentsRepoField));
         this.assignmentsRepoField.setText("assignments_2018");
         infoInputPanel.add(generateTextFieldPanel("TA-All Team Name", this.teachingAssistantsField));
