@@ -1,8 +1,10 @@
 package nl.andrewlalis.ui.view;
 
-import nl.andrewlalis.ui.control.command.CommandExecutor;
-import nl.andrewlalis.ui.control.listeners.CommandFieldKeyListener;
 import nl.andrewlalis.ui.control.OutputTextHandler;
+import nl.andrewlalis.ui.control.command.CommandExecutor;
+import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
+import nl.andrewlalis.ui.control.listeners.ArchiveAllListener;
+import nl.andrewlalis.ui.control.listeners.CommandFieldKeyListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -111,6 +113,30 @@ public class InitializerApp extends JFrame {
 
         githubManagerPanel.add(infoInputPanel, BorderLayout.NORTH);
 
+        // Common actions panel.
+        JPanel commonActionsPanel = new JPanel();
+        commonActionsPanel.setLayout(new BoxLayout(commonActionsPanel, BoxLayout.PAGE_AXIS));
+
+        JButton archiveAllButton = new JButton("Archive All");
+        archiveAllButton.addActionListener(new ArchiveAllListener(this.executor, this));
+        commonActionsPanel.add(archiveAllButton);
+
+        JButton generateStudentTeamsButton = new JButton("Read teams from file");
+        generateStudentTeamsButton.addActionListener(actionEvent -> {
+            JFileChooser chooser = new JFileChooser();
+            int returnValue = chooser.showOpenDialog(null);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                this.executor.executeCommand("readstudents", new String[]{
+                        chooser.getSelectedFile().getName(),
+                        teamSizeField.getText()
+                });
+            }
+
+        });
+        commonActionsPanel.add(generateStudentTeamsButton);
+
+        githubManagerPanel.add(commonActionsPanel, BorderLayout.CENTER);
+
         return githubManagerPanel;
     }
 
@@ -163,6 +189,22 @@ public class InitializerApp extends JFrame {
         newPanel.add(textField);
         newPanel.setBorder(BorderFactory.createEmptyBorder(5, 2, 5, 2));
         return newPanel;
+    }
+
+    /**
+     * Gets the organization name entered in the relevant field.
+     * @return The organization name the user has entered.
+     */
+    public String getOrganizationName() {
+        return this.organizationField.getText().trim();
+    }
+
+    /**
+     * Gets the oauth access token entered in the relevant field.
+     * @return The access token the user has entered.
+     */
+    public String getAccessToken() {
+        return this.accessTokenField.getText().trim();
     }
 
 }

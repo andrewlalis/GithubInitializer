@@ -8,9 +8,7 @@ import java.io.IOException;
  * Represents the action archive all repositories with a certain substring in their name.
  * It takes the following arguments:
  *
- * 1. Organization name
- * 2. Access Token
- * 3. Repo substring to archive by
+ * 1. Repo substring to archive by
  */
 public class ArchiveRepos extends GithubExecutable {
 

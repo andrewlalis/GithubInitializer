@@ -10,6 +10,10 @@ import java.util.List;
 /**
  * Execute this class to read students from a supplied filename and teamsize, and store their
  * information in the database.
+ * Requires the following arguments:
+ *
+ * 1. filename
+ * 2. teamsize
  */
 public class ReadStudentsFileToDB implements Executable {
 
