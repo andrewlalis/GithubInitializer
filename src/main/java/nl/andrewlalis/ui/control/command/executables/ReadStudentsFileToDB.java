@@ -35,6 +35,9 @@ public class ReadStudentsFileToDB implements Executable {
         String filename = args[0];
         int teamSize = Integer.parseUnsignedInt(args[1]);
         List<StudentTeam> teams = FileUtils.getStudentTeamsFromCSV(filename, teamSize);
+        if (teams == null) {
+            return false;
+        }
         return this.db.storeStudentTeams(teams);
     }
 }
