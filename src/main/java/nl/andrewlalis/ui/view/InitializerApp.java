@@ -35,9 +35,6 @@ public class InitializerApp extends JFrame {
 
     private JTextField organizationField = new JTextField();
     private JTextField accessTokenField = new JTextField();
-    private JTextField assignmentsRepoField = new JTextField();
-    private JTextField teachingAssistantsField = new JTextField();
-    private JTextField studentRepoField = new JTextField();
 
     /**
      * The executor responsible for performing meaningful actions.
@@ -103,12 +100,6 @@ public class InitializerApp extends JFrame {
         this.organizationField.setText("InitializerTesting");
         infoInputPanel.add(generateTextFieldPanel("Access Token", this.accessTokenField));
         this.accessTokenField.setText("haha get your own");
-        infoInputPanel.add(generateTextFieldPanel("Assignments Repo Name", this.assignmentsRepoField));
-        this.assignmentsRepoField.setText("assignments_2018");
-        infoInputPanel.add(generateTextFieldPanel("TA-All Team Name", this.teachingAssistantsField));
-        this.teachingAssistantsField.setText("teaching-assistants");
-        infoInputPanel.add(generateTextFieldPanel("Student Repo Prefix", this.studentRepoField));
-        this.studentRepoField.setText("advoop_2018");
 
         githubManagerPanel.add(infoInputPanel, BorderLayout.NORTH);
 
@@ -127,6 +118,9 @@ public class InitializerApp extends JFrame {
         JButton generateAssignmentsRepoButton = new JButton("Generate Assignments Repo");
         generateAssignmentsRepoButton.addActionListener(new GenerateAssignmentsRepoListener(this.executor, this));
         commonActionsPanel.add(generateAssignmentsRepoButton);
+
+        JButton defineTaTeamsButton = new JButton("Define TA Teams");
+        commonActionsPanel.add(defineTaTeamsButton);
 
         githubManagerPanel.add(commonActionsPanel, BorderLayout.CENTER);
 

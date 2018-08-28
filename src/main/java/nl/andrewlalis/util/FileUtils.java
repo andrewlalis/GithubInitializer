@@ -54,7 +54,6 @@ public class FileUtils {
             return studentTeams;
         } catch (IOException | ArrayIndexOutOfBoundsException e) {
             logger.severe("Unable to generate studentTeams from CSV file, exiting. " + e.getMessage());
-            System.exit(1);
             return null;
         }
     }
