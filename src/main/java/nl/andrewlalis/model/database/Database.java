@@ -2,10 +2,7 @@ package nl.andrewlalis.model.database;
 
 import nl.andrewlalis.model.*;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -60,7 +57,7 @@ public class Database {
             try {
                 statement.execute();
             } catch (SQLException e) {
-                logger.severe("SQLException while executing prepared statement: " + statement.toString() + ". Code: " + e.getErrorCode());
+                logger.severe("SQLException while executing prepared statement:\n" + statement.toString() + "\nCode: " + e.getErrorCode());
                 return false;
             }
         }
@@ -70,7 +67,7 @@ public class Database {
             try {
                 statement.execute();
             } catch (SQLException e) {
-                logger.severe("SQLException while inserting into table: " + statement.toString() + ". Code: " + e.getErrorCode());
+                logger.severe("SQLException while inserting into table:\n" + statement.toString() + "\nCode: " + e.getErrorCode());
                 return false;
             }
         }
@@ -102,6 +99,25 @@ public class Database {
         }
     }
 
+    private Student retrieveStudent(int id) {
+
+    }
+
+    private Person retrievePerson(int id) {
+        try {
+            logger.finest("Retrieving person (id=" + id + ").");
+            String sql = "SELECT * FROM persons WHERE id=?";
+            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            stmt.setInt(1, id);
+            ResultSet result = stmt.executeQuery();
+            Person p = new Person(id, result.getString("name"), result.getString("email_address"), result.getString("github_username"));
+        } catch (SQLException e) {
+            logger.severe("SQL Exception while retrieving Person.\n" + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Stores a teaching assistant without a team.
      * @param ta The teaching assistant to store.
@@ -129,6 +145,7 @@ public class Database {
             stmt.execute();
             return true;
         } catch (SQLException e) {
+            logger.severe("SQL Exception while inserting TeachingAssistant.\n" + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -202,6 +219,7 @@ public class Database {
             stmt.execute();
             return true;
         } catch (SQLException e) {
+            logger.severe("SQL Exception while inserting Student into database.\n" + e.getMessage());
             e.printStackTrace();
             return false;
         }

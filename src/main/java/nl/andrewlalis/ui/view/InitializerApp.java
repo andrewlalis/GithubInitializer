@@ -37,7 +37,6 @@ public class InitializerApp extends JFrame {
     private JTextField assignmentsRepoField = new JTextField();
     private JTextField teachingAssistantsField = new JTextField();
     private JTextField studentRepoField = new JTextField();
-    private JTextField teamSizeField = new JTextField();
 
     /**
      * The executor responsible for performing meaningful actions.

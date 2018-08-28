@@ -87,7 +87,7 @@ public class GithubManager {
      * @param allTeachingAssistants A team consisting of all teaching assistants.
      * @throws IOException If an HTTP request failed.
      */
-    private void setupAssignmentsRepo(String assignmentsRepoName, String description, TATeam allTeachingAssistants) throws IOException {
+    public void setupAssignmentsRepo(String assignmentsRepoName, String description, TATeam allTeachingAssistants) throws IOException {
         // Check if the repository already exists.
         GHRepository existingRepo = this.organization.getRepository(assignmentsRepoName);
         if (existingRepo != null) {
@@ -128,7 +128,7 @@ public class GithubManager {
      * @param prefix The prefix to append to the front of the repo name.
      * @throws IOException If an HTTP request fails.
      */
-    private void setupStudentTeam(StudentTeam team, TATeam taTeam, String prefix) throws IOException {
+    public void setupStudentTeam(StudentTeam team, TATeam taTeam, String prefix) throws IOException {
         // First check that the assignments repo exists, otherwise no invitations can be sent.
         if (this.assignmentsRepo == null) {
             logger.warning("Assignments repository must be created before student repositories.");
@@ -219,6 +219,7 @@ public class GithubManager {
             protectionBuilder.enable();
             logger.fine("Protected master branch of repository: " + repo.getName());
         } catch (IOException e) {
+            logger.severe("Could not protect master branch of repository: " + repo.getName());
             e.printStackTrace();
         }
     }
