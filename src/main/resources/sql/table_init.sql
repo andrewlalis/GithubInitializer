@@ -73,6 +73,16 @@ CREATE TABLE IF NOT EXISTS students (
     ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS student_preferred_partners (
+  student_id INTEGER PRIMARY KEY,
+  partner_id INTEGER NOT NULL,
+  FOREIGN KEY (student_id)
+    REFERENCES students(person_id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  UNIQUE (student_id, partner_id)
+);
+
 CREATE TABLE IF NOT EXISTS teaching_assistants (
   person_id INTEGER PRIMARY KEY,
   team_id INTEGER NOT NULL,

@@ -7,6 +7,7 @@ import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.ui.control.command.CommandExecutor;
 import nl.andrewlalis.ui.control.command.Executable;
 import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
+import nl.andrewlalis.ui.control.command.executables.GenerateAssignmentsRepo;
 import nl.andrewlalis.ui.control.command.executables.ReadStudentsFileToDB;
 import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.util.CommandLine;
@@ -50,12 +51,9 @@ public class Main {
         Database db = new Database("database/initializer.sqlite");
         db.initialize();
 
-        executor.registerCommand("test", args1 -> {
-            System.out.println("TESTING");
-            return true;
-        });
         executor.registerCommand("readstudents", new ReadStudentsFileToDB(db));
         executor.registerCommand("archiveall", new ArchiveRepos());
+        executor.registerCommand("generateassignments", new GenerateAssignmentsRepo());
 
         logger.info("GithubManager for Github Repositories in Educational Organizations. Program initialized.");
 

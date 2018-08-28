@@ -48,6 +48,7 @@ public class GithubManager {
             this.github = GitHub.connectUsingOAuth(accessToken);
             this.organization = this.github.getOrganization(organizationName);
         } catch (IOException e) {
+            logger.severe("Unable to make a GithubManager with organization name: " + organizationName + " and access token: " + accessToken);
             e.printStackTrace();
         }
     }
@@ -69,14 +70,14 @@ public class GithubManager {
      * @throws Exception If an error occurs while initializing the github repositories.
      */
     public void initializeGithubRepos(List<StudentTeam> studentTeams, TATeam teamAll, String assignmentsRepoName) throws Exception {
-        this.setupAssignmentsRepo(assignmentsRepoName, "fuck the police", teamAll);
+        this.setupAssignmentsRepo(assignmentsRepoName, "fuck the police", teamAll.getName());
 
         StudentTeam t = new StudentTeam();
         Student s = new Student(3050831, "Andrew Lalis", "andrewlalisofficial@gmail.com", "andrewlalis", null);
         t.addMember(s);
         t.setId(42);
 
-        this.setupStudentTeam(t, teamAll, "advoop_2018");
+        this.setupStudentTeam(t, teamAll.getGithubTeam(), "advoop_2018");
         // TODO: Finish this method.
     }
 
@@ -84,10 +85,11 @@ public class GithubManager {
      * Sets up the organization's assignments repository, and grants permissions to all teaching assistants.
      * @param assignmentsRepoName The name of the assignments repository.
      * @param description The description of the repository.
-     * @param allTeachingAssistants A team consisting of all teaching assistants.
+     * @param allTeachingAssistants The name of the team consisting of all teaching assistants.
      * @throws IOException If an HTTP request failed.
      */
-    public void setupAssignmentsRepo(String assignmentsRepoName, String description, TATeam allTeachingAssistants) throws IOException {
+    public void setupAssignmentsRepo(String assignmentsRepoName, String description, String allTeachingAssistants) throws IOException {
+        GHTeam team = this.organization.getTeamByName(allTeachingAssistants);
         // Check if the repository already exists.
         GHRepository existingRepo = this.organization.getRepository(assignmentsRepoName);
         if (existingRepo != null) {
@@ -95,29 +97,18 @@ public class GithubManager {
             logger.fine("Deleted pre-existing assignments repository.");
         }
 
-        // Create the repository.
-        GHCreateRepositoryBuilder builder = this.organization.createRepository(assignmentsRepoName);
-        builder.description("Assignments repository for Advanced Object Oriented Programming");
-        builder.wiki(false);
-        builder.issues(true);
-        builder.private_(false); // TODO: Make this true for production.
-        builder.team(allTeachingAssistants.getGithubTeam());
-        builder.gitignoreTemplate("Java");
-        this.assignmentsRepo = builder.create();
-        logger.info("Created assignments repository.");
-
-        this.assignmentsRepo = this.createRepository(assignmentsRepoName, allTeachingAssistants, description, false, true, false);
+        this.assignmentsRepo = this.createRepository(assignmentsRepoName, team, description, false, true, false);
 
         if (this.assignmentsRepo == null) {
             logger.severe("Could not create assignments repository.");
             return;
         }
 
-        this.protectMasterBranch(this.assignmentsRepo, allTeachingAssistants);
+        this.protectMasterBranch(this.assignmentsRepo, team);
 
         // Grant all teaching assistants write access.
-        allTeachingAssistants.getGithubTeam().add(this.assignmentsRepo, GHOrganization.Permission.ADMIN);
-        logger.fine("Gave admin rights to all teaching assistants in team: " + allTeachingAssistants.getName());
+        team.add(this.assignmentsRepo, GHOrganization.Permission.ADMIN);
+        logger.fine("Gave admin rights to all teaching assistants in team: " + team.getName());
     }
 
     /**
@@ -128,7 +119,7 @@ public class GithubManager {
      * @param prefix The prefix to append to the front of the repo name.
      * @throws IOException If an HTTP request fails.
      */
-    public void setupStudentTeam(StudentTeam team, TATeam taTeam, String prefix) throws IOException {
+    public void setupStudentTeam(StudentTeam team, GHTeam taTeam, String prefix) throws IOException {
         // First check that the assignments repo exists, otherwise no invitations can be sent.
         if (this.assignmentsRepo == null) {
             logger.warning("Assignments repository must be created before student repositories.");
@@ -145,7 +136,7 @@ public class GithubManager {
         this.protectMasterBranch(repo, taTeam);
         this.createDevelopmentBranch(repo);
 
-        taTeam.getGithubTeam().add(repo, GHOrganization.Permission.ADMIN);
+        taTeam.add(repo, GHOrganization.Permission.ADMIN);
         logger.fine("Added team " + taTeam.getName() + " as admin to repository: " + repo.getName());
 
         List<GHUser> users = new ArrayList<>();
@@ -209,12 +200,12 @@ public class GithubManager {
      * @param team The team which gets admin rights to the master branch.
      */
     @SuppressWarnings("deprecation")
-    private void protectMasterBranch(GHRepository repo, TATeam team) {
+    private void protectMasterBranch(GHRepository repo, GHTeam team) {
         try {
             GHBranchProtectionBuilder protectionBuilder = repo.getBranch("master").enableProtection();
             protectionBuilder.includeAdmins(false);
             protectionBuilder.restrictPushAccess();
-            protectionBuilder.teamPushAccess(team.getGithubTeam());
+            protectionBuilder.teamPushAccess(team);
             protectionBuilder.addRequiredChecks("ci/circleci");
             protectionBuilder.enable();
             logger.fine("Protected master branch of repository: " + repo.getName());
@@ -249,10 +240,10 @@ public class GithubManager {
      * @param isPrivate Whether or not the repository is private.
      * @return The repository that was created, or
      */
-    private GHRepository createRepository(String name, TATeam taTeam, String description, boolean hasWiki, boolean hasIssues, boolean isPrivate){
+    private GHRepository createRepository(String name, GHTeam taTeam, String description, boolean hasWiki, boolean hasIssues, boolean isPrivate){
         try {
             GHCreateRepositoryBuilder builder = this.organization.createRepository(name);
-            builder.team(taTeam.getGithubTeam());
+            builder.team(taTeam);
             builder.wiki(hasWiki);
             builder.issues(hasIssues);
             builder.description(description);

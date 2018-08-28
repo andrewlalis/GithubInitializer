@@ -3,6 +3,7 @@ package nl.andrewlalis.model.database;
 import nl.andrewlalis.model.*;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -99,22 +100,46 @@ public class Database {
         }
     }
 
-    private Student retrieveStudent(int id) {
-
+    /**
+     * Retrieves a list of preferred partners that each student has set.
+     * @param studentId The student id to search by.
+     * @return A list of student id's for all students that the given student wishes to be their partner.
+     */
+    private List<Integer> retrievePreferredPartners(int studentId) {
+        try {
+            logger.finest("Retrieving preferred partners of student: " + studentId);
+            String sql = "SELECT partner_id FROM student_preferred_partners WHERE student_id=?;";
+            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            stmt.setInt(1, studentId);
+            ResultSet results = stmt.executeQuery();
+            List<Integer> partners = new ArrayList<>();
+            while (results.next()) {
+                partners.add(results.getInt(1));
+            }
+            return partners;
+        } catch (SQLException e) {
+            logger.severe("SQL Exception while retrieving preferred partners of student: " + studentId + '\n' + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
-    private Person retrievePerson(int id) {
+    /**
+     * Retrieves a student by their id.
+     * @param id The id of the student (student number)
+     * @return The student corresponding to this number, or null if it could not be found.
+     */
+    public Student retrieveStudent(int id) {
         try {
-            logger.finest("Retrieving person (id=" + id + ").");
             String sql = "SELECT * FROM persons WHERE id=?";
             PreparedStatement stmt = this.connection.prepareStatement(sql);
             stmt.setInt(1, id);
             ResultSet result = stmt.executeQuery();
-            Person p = new Person(id, result.getString("name"), result.getString("email_address"), result.getString("github_username"));
+            return new Student(id, result.getString("name"), result.getString("email_address"), result.getString("github_username"), this.retrievePreferredPartners(id));
         } catch (SQLException e) {
-            logger.severe("SQL Exception while retrieving Person.\n" + e.getMessage());
+            logger.severe("SQL Exception while retrieving Student.\n" + e.getMessage());
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 
@@ -217,6 +242,14 @@ public class Database {
             stmt.setInt(2, teamId);
             stmt.setInt(3, student.getPreferredPartners().size() > 0 ? 1 : 0);
             stmt.execute();
+            // Storing partners.
+            String sqlPartner = "INSERT INTO student_preferred_partners (student_id, partner_id) VALUES (?, ?);";
+            PreparedStatement stmtPartner = this.connection.prepareStatement(sqlPartner);
+            for (int partnerId : student.getPreferredPartners()) {
+                stmtPartner.setInt(1, student.getNumber());
+                stmtPartner.setInt(2, partnerId);
+                stmtPartner.execute();
+            }
             return true;
         } catch (SQLException e) {
             logger.severe("SQL Exception while inserting Student into database.\n" + e.getMessage());

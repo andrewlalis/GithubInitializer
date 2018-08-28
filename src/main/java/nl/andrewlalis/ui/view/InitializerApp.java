@@ -5,6 +5,7 @@ import nl.andrewlalis.ui.control.command.CommandExecutor;
 import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
 import nl.andrewlalis.ui.control.listeners.ArchiveAllListener;
 import nl.andrewlalis.ui.control.listeners.CommandFieldKeyListener;
+import nl.andrewlalis.ui.control.listeners.GenerateAssignmentsRepoListener;
 import nl.andrewlalis.ui.control.listeners.ReadStudentsFileListener;
 
 import javax.swing.*;
@@ -25,7 +26,7 @@ public class InitializerApp extends JFrame {
     /**
      * A default size of the window on startup.
      */
-    private static final Dimension SIZE = new Dimension(800, 600);
+    private static final Dimension SIZE = new Dimension(1000, 600);
 
     /**
      * The pane on which general purpose program output is written.
@@ -122,6 +123,10 @@ public class InitializerApp extends JFrame {
         JButton generateStudentTeamsButton = new JButton("Read teams from file");
         generateStudentTeamsButton.addActionListener(new ReadStudentsFileListener(this.executor, this));
         commonActionsPanel.add(generateStudentTeamsButton);
+
+        JButton generateAssignmentsRepoButton = new JButton("Generate Assignments Repo");
+        generateAssignmentsRepoButton.addActionListener(new GenerateAssignmentsRepoListener(this.executor, this));
+        commonActionsPanel.add(generateAssignmentsRepoButton);
 
         githubManagerPanel.add(commonActionsPanel, BorderLayout.CENTER);
 
