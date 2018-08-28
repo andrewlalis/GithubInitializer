@@ -1,147 +1,153 @@
 package nl.andrewlalis.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * Represents one or more students' collective information.
+ * An abstract Team object from which both Teaching Assistant and Student teams can be built. A Team consists of a list
+ * of members, and a unique identification number.
  */
-public class Team {
+public abstract class Team {
 
     /**
-     * The list of students in this team.
+     * An identification number unique to this team alone.
      */
-    private List<Student> students;
+    protected int id;
 
     /**
-     * The team identification number.
+     * A list of members of this team.
      */
-    private int id;
+    private List<Person> members;
 
-    public Team() {
-        this.students = new ArrayList<>();
-        this.id = -1;
+    /**
+     * Constructs this team with the given id.
+     * @param id The id to assign to this team.
+     */
+    public Team(int id) {
+        this.id = id;
+        this.members = new ArrayList<>();
     }
 
     /**
-     * Determines if a student is already included in this team.
-     * @param student A student.
-     * @return True if the student is in this team, false otherwise.
+     * @param newId The new id number to assign to this team.
      */
-    public boolean hasStudent(Student student) {
-        for (Student s : this.students) {
-            if (s.equals(student)) {
+    public void setId(int newId) {
+        this.id = newId;
+    }
+
+    /**
+     * @return This team's id number.
+     */
+    public int getId() {
+        return this.id;
+    }
+
+    /**
+     * Adds a new person to this team, only if they do not exist in this team yet.
+     * @param newMember The new member to add.
+     */
+    public void addMember(Person newMember) {
+        for (Person person : this.members) {
+            if (person.equals(newMember)) {
+                return;
+            }
+        }
+        this.members.add(newMember);
+    }
+
+    /**
+     * Removes a person from this team.
+     * @param person The person to remove.
+     */
+    public void removeMember(Person person) {
+        this.members.remove(person);
+    }
+
+    /**
+     * Checks if this team contains the given person.
+     * @param person The person to check for.
+     * @return True if the person is a member of this team, false otherwise.
+     */
+    public boolean containsMember(Person person) {
+        for (Person p : this.members) {
+            if (p.equals(person)) {
                 return true;
             }
         }
         return false;
     }
 
-    public int getStudentCount() {
-        return this.students.size();
-    }
-
-    public int getId() {
-        return this.id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setStudents(List<Student> students) {
-        this.students = students;
-    }
-
-    public List<Student> getStudents() {
-        return this.students;
+    /**
+     * Sets the team to be comprised of only the members given in the array.
+     * @param people The people which will make up the members of this team.
+     */
+    public void setMembers(Person[] people) {
+        this.members = new ArrayList<>(Arrays.asList(people));
     }
 
     /**
-     * Adds a student to this team.
-     * @param student The student to add.
-     * @return True if the student could be added, false otherwise.
+     * Gets a list of people in this team.
+     * @return A list of people in this team.
      */
-    public boolean addStudent(Student student) {
-        if (!this.hasStudent(student)) {
-            this.students.add(student);
-            return true;
-        } else {
-            return false;
-        }
+    public Person[] getMembers() {
+        Person[] people = new Person[this.memberCount()];
+        this.members.toArray(people);
+        return people;
     }
 
     /**
-     * Determines if a team is valid, and ready to be added to the Github organization.
-     * A team is valid if and only if:
-     *      - The student count is equal to the team size.
-     *      - Each student is unique.
-     *      - Each student's preferred partners match all the others.
-     * @param teamSize The preferred size of teams.
-     * @return True if the team is valid, and false otherwise.
+     * Gets the number of people in this team.
+     * @return The number of people in this team.
      */
-    public boolean isValid(int teamSize) {
-        if (this.getStudentCount() == teamSize) {
-            List<Integer> encounteredIds = new ArrayList<>();
-            for (Student studentA : this.students) {
-                for (Student studentB : this.students) {
-                    if (!studentA.equals(studentB) && !studentA.getPreferredPartners().contains(studentB.getNumber())) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
+    public int memberCount() {
+        return this.members.size();
     }
 
     /**
-     * Generates a unique name which is intended to be used for the repository name of this team.
-     * @param prefix A prefix to further reduce the chances of duplicate names.
-     *               It is suggested to use something like "2018_OOP"
-     * @return A string comprised of the prefix, team id, and student number of each team member.
+     * Determines if another team has the same members as this team.
+     * @param team The team to compare to this team.
+     * @return True if the other team has all the same members as this team.
      */
-    public String generateUniqueName(String prefix) {
-        StringBuilder sb = new StringBuilder(prefix);
-        sb.append("_team_").append(this.id);
-        for (Student s : this.students) {
-            sb.append('_').append(s.getNumber());
-        }
-        return sb.toString();
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("Team: ");
-        sb.append(this.id).append('\n');
-        for (Student s : this.students) {
-            sb.append('\t').append(s.toString()).append('\n');
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Determines if one team is equivalent to another. This is determined by if the two teams are comprised of the same
-     * students, in any order.
-     * @param o The object to compare to this team.
-     * @return True if the teams contain the same students, false otherwise.
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof Team) {
-            Team t = (Team) o;
-            if (t.getStudentCount() != this.getStudentCount()) {
-                return false;
-            }
-            for (Student s : this.students) {
-                if (!t.hasStudent(s)) {
+    public boolean hasSameMembers(Team team) {
+        if (this.memberCount() == team.memberCount()) {
+            for (Person person : this.members) {
+                if (!team.containsMember(person)) {
                     return false;
                 }
             }
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
+
+    /**
+     * Checks if an object is equal to this team. First checks if the other object is a Team, and then if it has the
+     * same id and team size. If both of those conditions are met, then it will check that all team members are the
+     * same.
+     * @param obj The object to check for equality.
+     * @return True if the two objects represent the same team, or false otherwise.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Team) {
+            Team team = (Team) obj;
+            return team.getId() == this.getId() && this.hasSameMembers(team);
+        }
+        return false;
+    }
+
+    /**
+     * @return A String containing a line for each member in the team.
+     */
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Team of ").append(this.memberCount()).append(" members:\tID: ").append(this.id).append('\n');
+        for (Person person : this.members) {
+            sb.append(person.toString()).append('\n');
+        }
+        return sb.toString();
+    }
+
 }

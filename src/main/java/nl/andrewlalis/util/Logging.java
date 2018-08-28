@@ -14,17 +14,22 @@ public class Logging {
     public static void setup(boolean verbose) throws IOException {
         Logger logger = Logger.getGlobal();
 
-        if (verbose) {
-            logger.setLevel(Level.FINEST);
-        } else {
-            logger.setLevel(Level.INFO);
-        }
-
-        outputFile = new FileHandler("log/latest.txt");
+        outputFile = new FileHandler("log/latest.log");
         formatter = new SimpleFormatter();
 
         outputFile.setFormatter(formatter);
+        outputFile.setLevel(Level.FINEST);
+
+        if (verbose) {
+            Handler systemOut = new ConsoleHandler();
+            systemOut.setLevel(Level.ALL);
+
+            logger.addHandler(systemOut);
+        }
         logger.addHandler(outputFile);
+        logger.setLevel(Level.ALL);
+
+        Logger.getLogger("").setLevel(Level.OFF);
 
     }
 
