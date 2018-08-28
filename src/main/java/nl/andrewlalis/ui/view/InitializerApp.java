@@ -5,6 +5,7 @@ import nl.andrewlalis.ui.control.command.CommandExecutor;
 import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
 import nl.andrewlalis.ui.control.listeners.ArchiveAllListener;
 import nl.andrewlalis.ui.control.listeners.CommandFieldKeyListener;
+import nl.andrewlalis.ui.control.listeners.ReadStudentsFileListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -108,8 +109,6 @@ public class InitializerApp extends JFrame {
         this.teachingAssistantsField.setText("teaching-assistants");
         infoInputPanel.add(generateTextFieldPanel("Student Repo Prefix", this.studentRepoField));
         this.studentRepoField.setText("advoop_2018");
-        infoInputPanel.add(generateTextFieldPanel("Team Size", this.teamSizeField));
-        this.teamSizeField.setText("2");
 
         githubManagerPanel.add(infoInputPanel, BorderLayout.NORTH);
 
@@ -122,17 +121,7 @@ public class InitializerApp extends JFrame {
         commonActionsPanel.add(archiveAllButton);
 
         JButton generateStudentTeamsButton = new JButton("Read teams from file");
-        generateStudentTeamsButton.addActionListener(actionEvent -> {
-            JFileChooser chooser = new JFileChooser();
-            int returnValue = chooser.showOpenDialog(null);
-            if (returnValue == JFileChooser.APPROVE_OPTION) {
-                this.executor.executeCommand("readstudents", new String[]{
-                        chooser.getSelectedFile().getName(),
-                        teamSizeField.getText()
-                });
-            }
-
-        });
+        generateStudentTeamsButton.addActionListener(new ReadStudentsFileListener(this.executor, this));
         commonActionsPanel.add(generateStudentTeamsButton);
 
         githubManagerPanel.add(commonActionsPanel, BorderLayout.CENTER);

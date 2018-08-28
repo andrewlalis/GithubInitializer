@@ -65,8 +65,11 @@ public class StudentTeam extends Team{
     public String generateRepoDescription() {
         StringBuilder sb = new StringBuilder();
         sb.append("Group ").append(this.id).append(": ");
-        for (Student s : this.getStudents()) {
-            sb.append(s.getName()).append(' ');
+        for (int i = 0; i < this.memberCount(); i++) {
+            sb.append(this.getStudents()[i].getName());
+            if (i != this.memberCount()-1) {
+                sb.append(", ");
+            }
         }
         return sb.toString();
     }
