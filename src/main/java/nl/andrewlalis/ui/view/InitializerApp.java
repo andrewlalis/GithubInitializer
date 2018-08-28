@@ -2,11 +2,7 @@ package nl.andrewlalis.ui.view;
 
 import nl.andrewlalis.ui.control.OutputTextHandler;
 import nl.andrewlalis.ui.control.command.CommandExecutor;
-import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
-import nl.andrewlalis.ui.control.listeners.ArchiveAllListener;
-import nl.andrewlalis.ui.control.listeners.CommandFieldKeyListener;
-import nl.andrewlalis.ui.control.listeners.GenerateAssignmentsRepoListener;
-import nl.andrewlalis.ui.control.listeners.ReadStudentsFileListener;
+import nl.andrewlalis.ui.control.listeners.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,6 +41,8 @@ public class InitializerApp extends JFrame {
         this.executor = executor;
 
         // UI initialization.
+        ImageIcon icon = new ImageIcon(getClass().getResource("/image/icon.png"));
+        this.setIconImage(icon.getImage());
         this.initFrame();
     }
 
@@ -120,6 +118,7 @@ public class InitializerApp extends JFrame {
         commonActionsPanel.add(generateAssignmentsRepoButton);
 
         JButton defineTaTeamsButton = new JButton("Define TA Teams");
+        defineTaTeamsButton.addActionListener(new DefineTaTeamsListener(this.executor, this));
         commonActionsPanel.add(defineTaTeamsButton);
 
         githubManagerPanel.add(commonActionsPanel, BorderLayout.CENTER);
@@ -192,6 +191,10 @@ public class InitializerApp extends JFrame {
      */
     public String getAccessToken() {
         return this.accessTokenField.getText().trim();
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessTokenField.setText(accessToken);
     }
 
 }

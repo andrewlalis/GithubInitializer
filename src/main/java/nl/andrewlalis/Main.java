@@ -34,12 +34,7 @@ public class Main {
         Map<String, String> userOptions = CommandLine.parseArgs(args);
 
         // Initialize logger.
-        try {
-            Logging.setup(true); // TODO: Replace true with command line arg.
-
-        } catch (IOException e) {
-            logger.severe("Unable to save log to file.");
-        }
+        Logging.setup();
 
         // Command executor which will be used by all actions the user can do.
         CommandExecutor executor = new CommandExecutor();
@@ -47,6 +42,7 @@ public class Main {
         // Initialize User Interface.
         InitializerApp app = new InitializerApp(executor);
         app.begin();
+        app.setAccessToken(userOptions.get("token"));
 
         Database db = new Database("database/initializer.sqlite");
         db.initialize();
@@ -56,28 +52,6 @@ public class Main {
         executor.registerCommand("generateassignments", new GenerateAssignmentsRepo());
 
         logger.info("GithubManager for Github Repositories in Educational Organizations. Program initialized.");
-
-
-
-        // Get studentTeams from CSV file.
-//        List<StudentTeam> studentTeams = getStudentTeamsFromCSV(userOptions.get("input"), Integer.parseInt(userOptions.get("teamsize")));
-//
-//        GithubManager githubManager = new GithubManager(
-//                userOptions.get("organization"),
-//                userOptions.get("token"),
-//                "assignments_2018",
-//                "teaching-assistants",
-//                "advoop_2018"
-//        );
-
-        try {
-            //githubManager.initializeGithubRepos(studentTeams);
-            //githubManager.archiveAllRepositories("team");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
-
-
 
 }
