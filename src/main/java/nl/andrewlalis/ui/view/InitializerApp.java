@@ -1,11 +1,15 @@
 package nl.andrewlalis.ui.view;
 
+import com.sun.org.apache.xpath.internal.operations.Or;
+import nl.andrewlalis.model.Organization;
+import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.ui.control.OutputTextHandler;
 import nl.andrewlalis.ui.control.command.CommandExecutor;
 import nl.andrewlalis.ui.control.listeners.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,8 +41,22 @@ public class InitializerApp extends JFrame {
      */
     private CommandExecutor executor;
 
-    public InitializerApp(CommandExecutor executor) {
+    /**
+     * The organization object, which contains all important state information.
+     */
+    private Organization organization;
+
+    /**
+     * Constructs a new instance of the main application frame, with both an executor, and organization model.
+     *
+     * @param executor The command executor, which is passed to any action listeners, so that buttons in this interface
+     *                 may execute commands in the same way that the command line can.
+     * @param organization A reference to the application's organization model, which holds all important runtime state
+     *                     information.
+     */
+    public InitializerApp(CommandExecutor executor, Organization organization) {
         this.executor = executor;
+        this.organization = organization;
 
         // UI initialization.
         ImageIcon icon = new ImageIcon(getClass().getResource("/image/icon.png"));

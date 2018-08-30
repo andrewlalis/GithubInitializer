@@ -1,5 +1,6 @@
 package nl.andrewlalis;
 
+import nl.andrewlalis.model.Organization;
 import nl.andrewlalis.model.database.Database;
 import nl.andrewlalis.ui.control.command.CommandExecutor;
 import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
@@ -31,12 +32,16 @@ public class Main {
         // Command executor which will be used by all actions the user can do.
         CommandExecutor executor = new CommandExecutor();
 
+        // Main application model.
+        Organization organization = new Organization();
+
         // Initialize User Interface.
-        InitializerApp app = new InitializerApp(executor);
+        InitializerApp app = new InitializerApp(executor, organization);
         app.begin();
         app.setAccessToken(userOptions.get("token"));
 
         Database db = new Database("database/initializer.sqlite");
+
 
         executor.registerCommand("read_students", new ReadStudentsFileToDB(db));
         executor.registerCommand("archive_all", new ArchiveRepos());

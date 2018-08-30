@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS teams (
 );
 
 CREATE TABLE IF NOT EXISTS team_members (
-  id INTEGER PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   team_id INTEGER NOT NULL,
   person_id INTEGER NOT NULL,
   FOREIGN KEY (team_id)
@@ -69,7 +69,6 @@ CREATE TABLE IF NOT EXISTS teaching_assistant_teams (
 CREATE TABLE IF NOT EXISTS student_teams (
   team_id INTEGER PRIMARY KEY,
   repository_name TEXT,
-  group_id INTEGER NOT NULL UNIQUE,
   teaching_assistant_team_id INTEGER,
   FOREIGN KEY (team_id)
     REFERENCES teams(id)

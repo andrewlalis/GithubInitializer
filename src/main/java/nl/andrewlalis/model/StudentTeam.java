@@ -1,11 +1,23 @@
 package nl.andrewlalis.model;
 
+import org.kohsuke.github.GHRepository;
+
 import java.util.Arrays;
 
 /**
  * Represents one or more students' collective information.
  */
 public class StudentTeam extends Team{
+
+    /**
+     * The repository belonging to this team.
+     */
+    private GHRepository repository;
+
+    /**
+     * The TATeam responsible for this student team.
+     */
+    private TATeam taTeam;
 
     public StudentTeam() {
         super(-1);
@@ -24,16 +36,19 @@ public class StudentTeam extends Team{
      * A team is valid if and only if:
      *      - The student count is equal to the team size.
      *      - Each student is unique.
-     *      - Each student's preferred partners match all the others.
+     *      - Each student's preferred partners match all the others, or a student has no preferences.
      * @param teamSize The preferred size of teams.
      * @return True if the team is valid, and false otherwise.
      */
     public boolean isValid(int teamSize) {
         if (this.memberCount() == teamSize) {
             for (Student studentA : this.getStudents()) {
-                for (Student studentB : this.getStudents()) {
-                    if (!studentA.equals(studentB) && !studentA.getPreferredPartners().contains(studentB.getNumber())) {
-                        return false;
+                // If the student doesn't have an preferred partners, then assume that this is valid.
+                if (!studentA.getPreferredPartners().isEmpty()) {
+                    for (Student studentB : this.getStudents()) {
+                        if (!studentA.equals(studentB) && !studentA.getPreferredPartners().contains(studentB.getNumber())) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -72,5 +87,21 @@ public class StudentTeam extends Team{
             }
         }
         return sb.toString();
+    }
+
+    public GHRepository getRepository() {
+        return this.repository;
+    }
+
+    public void setRepository(GHRepository repo) {
+        this.repository = repo;
+    }
+
+    public TATeam getTaTeam() {
+        return this.taTeam;
+    }
+
+    public void setTaTeam(TATeam team) {
+        this.taTeam = team;
     }
 }
