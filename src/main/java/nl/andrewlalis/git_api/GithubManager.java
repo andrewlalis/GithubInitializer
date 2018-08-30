@@ -2,7 +2,13 @@ package nl.andrewlalis.git_api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import nl.andrewlalis.model.*;
+import nl.andrewlalis.model.Student;
+import nl.andrewlalis.model.StudentTeam;
+import nl.andrewlalis.model.TATeam;
+import nl.andrewlalis.model.TeachingAssistant;
+import nl.andrewlalis.model.error.Error;
+import nl.andrewlalis.model.error.Severity;
+import nl.andrewlalis.ui.view.InitializerApp;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.StringEntity;
@@ -81,7 +87,7 @@ public class GithubManager {
     public List<TeachingAssistant> getMembers() {
         List<TeachingAssistant> teachingAssistants = new ArrayList<>();
         try {
-            for (GHUser member : this.organization.getMembers()) {
+            for (GHUser member : this.organization.listMembers().asList()) {
                 teachingAssistants.add(new TeachingAssistant(-1, member.getName(), member.getEmail(), member.getLogin()));
             }
         } catch (IOException e) {
@@ -89,34 +95,6 @@ public class GithubManager {
             e.printStackTrace();
         }
         return teachingAssistants;
-    }
-
-    /**
-     * Initializes the github repository for all studentTeams given.
-     *
-     * Creates for the entire organization:
-     * - an assignments repository with protected master branch and TA permissions.
-     * Creates for each team:
-     * - a repository
-     * - protected master branch
-     * - development branch
-     * - adds students to repository
-     * - adds all students to assignments repository.
-     * @param studentTeams The list of student studentTeams.
-     * @param teamAll The team of all teaching assistants.
-     * @param assignmentsRepoName The name of the assignments repo.
-     * @throws Exception If an error occurs while initializing the github repositories.
-     */
-    public void initializeGithubRepos(List<StudentTeam> studentTeams, TATeam teamAll, String assignmentsRepoName) throws Exception {
-        this.setupAssignmentsRepo(assignmentsRepoName, "fuck the police", teamAll.getName());
-
-        StudentTeam t = new StudentTeam();
-        Student s = new Student(3050831, "Andrew Lalis", "andrewlalisofficial@gmail.com", "andrewlalis", null);
-        t.addMember(s);
-        t.setId(42);
-
-        this.setupStudentTeam(t, teamAll.getGithubTeam(), "advoop_2018");
-        // TODO: Finish this method.
     }
 
     /**
@@ -131,6 +109,7 @@ public class GithubManager {
         // Check if the repository already exists.
         GHRepository existingRepo = this.organization.getRepository(assignmentsRepoName);
         if (existingRepo != null) {
+            InitializerApp.organization.addError(new Error(Severity.MINOR, "Assignments repository already existed, deleting it."));
             existingRepo.delete();
             logger.fine("Deleted pre-existing assignments repository.");
         }
@@ -155,46 +134,45 @@ public class GithubManager {
      * @param team The student team to set up.
      * @param taTeam The team of teaching assistants that is responsible for these students.
      * @param prefix The prefix to append to the front of the repo name.
-     * @throws IOException If an HTTP request fails.
      */
-    public void setupStudentTeam(StudentTeam team, GHTeam taTeam, String prefix) throws IOException {
+    public void setupStudentTeam(StudentTeam team, TATeam taTeam, String prefix) {
         // First check that the assignments repo exists, otherwise no invitations can be sent.
         if (this.assignmentsRepo == null) {
             logger.warning("Assignments repository must be created before student repositories.");
             return;
         }
 
-        GHRepository repo = this.createRepository(team.generateUniqueName(prefix), taTeam, team.generateRepoDescription(), false, true, false);
+        GHRepository repo = this.createRepository(team.generateUniqueName(prefix), taTeam.getGithubTeam(), team.generateRepoDescription(), false, true, false);
 
         if (repo == null) {
             logger.severe("Repository for student team " + team.getId() + " could not be created.");
             return;
         }
 
-        this.protectMasterBranch(repo, taTeam);
+        this.protectMasterBranch(repo, taTeam.getGithubTeam());
         this.createDevelopmentBranch(repo);
+        this.addTATeamAsAdmin(repo, taTeam.getGithubTeam());
+        this.inviteStudentsToRepos(team, repo);
 
-        taTeam.add(repo, GHOrganization.Permission.ADMIN);
-        logger.fine("Added team " + taTeam.getName() + " as admin to repository: " + repo.getName());
-
-        List<GHUser> users = new ArrayList<>();
-        for (Student student : team.getStudents()) {
-            GHUser user = this.github.getUser(student.getGithubUsername());
-            users.add(user);
-        }
-
-        repo.addCollaborators(users);
-        this.assignmentsRepo.addCollaborators(users);
+        team.setRepository(repo);
+        team.setTaTeam(taTeam);
     }
 
     /**
      * Deletes all repositories in the organization.
-     * @throws IOException if an error occurs with sending requests.
+     * @param substring The substring which repository names should contain to be deleted.
      */
-    public void deleteAllRepositories() throws IOException {
+    public void deleteAllRepositories(String substring) {
         List<GHRepository> repositories = this.organization.listRepositories().asList();
         for (GHRepository repo : repositories) {
-            repo.delete();
+            if (repo.getName().contains(substring)) {
+                try {
+                    repo.delete();
+                } catch (IOException e) {
+                    InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not delete repository: " + repo.getName()));
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -202,7 +180,7 @@ public class GithubManager {
      * Archives all repositories whose name contains the given substring.
      * @param sub Any repository containing this substring will be archived.
      */
-    public void archiveAllRepositories(String sub) throws IOException {
+    public void archiveAllRepositories(String sub) {
         List<GHRepository> repositories = this.organization.listRepositories().asList();
         for (GHRepository repo : repositories) {
             if (repo.getName().contains(sub)) {
@@ -215,21 +193,61 @@ public class GithubManager {
      * Archives a repository so that it can no longer be manipulated.
      * TODO: Change to using Github API instead of Apache HttpUtils.
      * @param repo The repository to archive.
-     * @throws IOException If an error occurs with the HTTP request.
      */
-    public void archiveRepository(GHRepository repo) throws IOException {
-        HttpPatch patch = new HttpPatch("https://api.github.com/repos/" + repo.getFullName() + "?access_token=" + this.accessToken);
-        CloseableHttpClient client = HttpClientBuilder.create().build();
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode root = mapper.createObjectNode();
-        root.put("archived", true);
-        String json = mapper.writeValueAsString(root);
-        patch.setEntity(new StringEntity(json));
-        HttpResponse response = client.execute(patch);
-        if (response.getStatusLine().getStatusCode() != 200) {
-            throw new IOException("Could not archive repository: " + repo.getName() + ". Code: " + response.getStatusLine().getStatusCode());
+    private void archiveRepository(GHRepository repo) {
+        try {
+            HttpPatch patch = new HttpPatch("https://api.github.com/repos/" + repo.getFullName() + "?access_token=" + this.accessToken);
+            CloseableHttpClient client = HttpClientBuilder.create().build();
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode root = mapper.createObjectNode();
+            root.put("archived", true);
+            String json = mapper.writeValueAsString(root);
+            patch.setEntity(new StringEntity(json));
+            HttpResponse response = client.execute(patch);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                throw new IOException("Could not archive repository: " + repo.getName() + ". Code: " + response.getStatusLine().getStatusCode());
+            }
+            logger.info("Archived repository: " + repo.getFullName());
+        } catch (IOException e) {
+            InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not archive repository: " + repo.getName()));
         }
-        logger.info("Archived repository: " + repo.getFullName());
+    }
+
+    /**
+     * Invites students in a team to their repository, and the assignments repository.
+     * @param team The team of students to invite as collaborators.
+     * @param repo The repository created for the students.
+     */
+    private void inviteStudentsToRepos(StudentTeam team, GHRepository repo) {
+        try {
+            logger.finest("Adding students from team: " + team.getId() + " as collaborators.");
+            List<GHUser> users = new ArrayList<>();
+            for (Student student : team.getStudents()) {
+                GHUser user = this.github.getUser(student.getGithubUsername());
+                users.add(user);
+            }
+
+            repo.addCollaborators(users);
+            this.assignmentsRepo.addCollaborators(users);
+        } catch (IOException e) {
+            InitializerApp.organization.addError(new Error(Severity.HIGH, "Students in team: " + team + " could not be added as collaborators to assignments repo or their repository."));
+            logger.warning("Could not add students as collaborators to assignments or their repo.");
+        }
+    }
+
+    /**
+     * Adds a teaching assistant team as admins to a particular student repository.
+     * @param studentRepo The student repository.
+     * @param taTeam The team to give admin rights.
+     */
+    private void addTATeamAsAdmin(GHRepository studentRepo, GHTeam taTeam) {
+        try {
+            taTeam.add(studentRepo, GHOrganization.Permission.ADMIN);
+            logger.fine("Added team " + taTeam.getName() + " as admin to repository: " + studentRepo.getName());
+        } catch (IOException e) {
+            InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not add TA Team: " + taTeam.getName() + " as ADMIN to repository: " + studentRepo.getName()));
+            logger.severe("Could not add TA Team: " + taTeam.getName() + " as admins to repository: " + studentRepo.getName());
+        }
     }
 
     /**
@@ -248,6 +266,7 @@ public class GithubManager {
             protectionBuilder.enable();
             logger.fine("Protected master branch of repository: " + repo.getName());
         } catch (IOException e) {
+            InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not protect master branch of repository: " + repo.getName()));
             logger.severe("Could not protect master branch of repository: " + repo.getName());
             e.printStackTrace();
         }
@@ -263,6 +282,7 @@ public class GithubManager {
             repo.createRef("refs/heads/development", sha1);
             logger.fine("Created development branch of repository: " + repo.getName());
         } catch (IOException e) {
+            InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not create development branch of repository: " + repo.getName()));
             logger.severe("Could not create development branch for repository: " + repo.getName() + '\n' + e.getMessage());
             e.printStackTrace();
         }
@@ -276,7 +296,7 @@ public class GithubManager {
      * @param hasWiki Whether the repo has a wiki enabled.
      * @param hasIssues Whether the repo has issues enabled.
      * @param isPrivate Whether or not the repository is private.
-     * @return The repository that was created, or
+     * @return The repository that was created, or null if it could not be created.
      */
     private GHRepository createRepository(String name, GHTeam taTeam, String description, boolean hasWiki, boolean hasIssues, boolean isPrivate){
         try {
@@ -286,12 +306,13 @@ public class GithubManager {
             builder.issues(hasIssues);
             builder.description(description);
             builder.gitignoreTemplate("Java");
-            builder.private_(isPrivate); // TODO: Change this to true for production
+            builder.private_(isPrivate);
             GHRepository repo = builder.create();
             logger.fine("Created repository: " + repo.getName());
             return repo;
         } catch (IOException e) {
             logger.severe("Could not create repository: " + name + '\n' + e.getMessage());
+            InitializerApp.organization.addError(new Error(Severity.CRITICAL, "Could not create repository: " + name));
             e.printStackTrace();
             return null;
         }

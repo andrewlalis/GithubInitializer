@@ -2,6 +2,9 @@ package nl.andrewlalis.util;
 
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
+import nl.andrewlalis.model.error.Error;
+import nl.andrewlalis.model.error.Severity;
+import nl.andrewlalis.ui.view.InitializerApp;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
@@ -36,6 +39,7 @@ public class TeamGenerator {
         logger.fine("Generating teams of size " + teamSize);
         if (teamSize < 1) {
             logger.severe("Invalid team size.");
+            InitializerApp.organization.addError(new Error(Severity.CRITICAL, "Invalid team size while generating teams from CSV."));
             throw new IllegalArgumentException("StudentTeam size must be greater than or equal to 1. Got " + teamSize);
         }
         logger.fine("Parsing CSV file.");
@@ -47,6 +51,7 @@ public class TeamGenerator {
             studentMap = readAllStudents(records, teamSize);
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.severe("StudentTeam size does not match column count in records.");
+            InitializerApp.organization.addError(new Error(Severity.CRITICAL, "Team size does not match column count in records."));
             throw new IllegalArgumentException("StudentTeam size does not match column count in records.");
         }
 

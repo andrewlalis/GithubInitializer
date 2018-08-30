@@ -2,7 +2,10 @@ package nl.andrewlalis.ui.control.command.executables;
 
 import nl.andrewlalis.model.Organization;
 import nl.andrewlalis.model.StudentTeam;
+import nl.andrewlalis.model.error.Error;
+import nl.andrewlalis.model.error.Severity;
 import nl.andrewlalis.ui.control.command.Executable;
+import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.util.FileUtils;
 
 import java.util.List;
@@ -17,15 +20,6 @@ import java.util.List;
  */
 public class ReadStudentsFile implements Executable {
 
-    /**
-     * A reference to the application's organization model.
-     */
-    private Organization organization;
-
-    public ReadStudentsFile(Organization organization) {
-        this.organization = organization;
-    }
-
     @Override
     public boolean execute(String[] args) {
         if (args.length < 2) {
@@ -37,7 +31,7 @@ public class ReadStudentsFile implements Executable {
         if (teams == null) {
             return false;
         }
-        this.organization.setStudentTeams(teams);
+        InitializerApp.organization.setStudentTeams(teams);
         return true;
     }
 }

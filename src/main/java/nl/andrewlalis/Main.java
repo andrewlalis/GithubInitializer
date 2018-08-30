@@ -31,21 +31,23 @@ public class Main {
         // Command executor which will be used by all actions the user can do.
         CommandExecutor executor = new CommandExecutor();
 
-        // Main application model.
-        Organization organization = new Organization();
+        // Main application model is stored as a static variable that is accessible everywhere.
+        InitializerApp.organization = new Organization();
 
         // Initialize User Interface.
-        InitializerApp app = new InitializerApp(executor, organization);
+        InitializerApp app = new InitializerApp(executor);
         app.begin();
         app.setAccessToken(userOptions.get("token"));
 
         // Initialize executable commands.
-        executor.registerCommand("read_students", new ReadStudentsFile(organization));
+        executor.registerCommand("read_students", new ReadStudentsFile(InitializerApp.organization));
         executor.registerCommand("archive_all", new ArchiveRepos());
         executor.registerCommand("generate_assignments", new GenerateAssignmentsRepo());
         executor.registerCommand("define_ta_teams", new DefineTaTeams(app));
 
-        logger.info("GithubManager for Github Repositories in Educational Organizations. Program initialized.");
+        logger.info("GithubManager for Github Repositories in Educational Organizations.\n" +
+                "© Andrew Lalis (2018), All rights reserved.\n" +
+                "Program initialized.");
     }
 
 }
