@@ -5,6 +5,9 @@ import nl.andrewlalis.model.TeachingAssistant;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Controls what is rendered in a single list cell when displaying a list of TeachingAssistants.
+ */
 public class TeachingAssistantListCellRenderer extends DefaultListCellRenderer {
 
     @Override

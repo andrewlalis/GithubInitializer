@@ -1,6 +1,7 @@
 package nl.andrewlalis.ui.view;
 
 import nl.andrewlalis.git_api.GithubManager;
+import nl.andrewlalis.ui.view.list_models.TATeamListCellRenderer;
 import nl.andrewlalis.ui.view.list_models.TATeamListModel;
 import nl.andrewlalis.ui.view.list_models.TeachingAssistantListCellRenderer;
 import nl.andrewlalis.ui.view.list_models.TeachingAssistantsListModel;
@@ -17,6 +18,8 @@ import java.awt.*;
  *  - Invite new members to the organization.
  */
 public class DefineTaTeamsDialog extends JDialog {
+
+    private static final Dimension LIST_SIZE = new Dimension(200, -1);
 
     /**
      * The manager used to manipulate the organization.
@@ -63,6 +66,8 @@ public class DefineTaTeamsDialog extends JDialog {
 
         ListModel model = new TATeamListModel(this.manager.getTeams());
         JList teamsList = new JList(model);
+        teamsList.setCellRenderer(new TATeamListCellRenderer());
+        teamsList.setPreferredSize(LIST_SIZE);
         teamsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         JScrollPane teamsListScrollPane = new JScrollPane(teamsList);
@@ -84,6 +89,7 @@ public class DefineTaTeamsDialog extends JDialog {
         JList membersList = new JList();
         membersList.setModel(model);
         membersList.setCellRenderer(new TeachingAssistantListCellRenderer());
+        membersList.setPreferredSize(LIST_SIZE);
         membersList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         JScrollPane membersListScrollPane = new JScrollPane(membersList);

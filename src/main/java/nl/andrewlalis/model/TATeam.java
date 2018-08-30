@@ -3,6 +3,7 @@ package nl.andrewlalis.model;
 import org.kohsuke.github.GHTeam;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,6 +30,14 @@ public class TATeam extends Team {
     public TATeam(String name, int id) {
         super(id);
         this.name = name;
+    }
+
+    /**
+     * Gets a list of teaching assistants, as a convenience method to avoid having to do an array cast.
+     * @return An array of all teaching assistant members of this team.
+     */
+    public TeachingAssistant[] getTeachingAssistants() {
+        return Arrays.copyOf(this.getMembers(), this.memberCount(), TeachingAssistant[].class);
     }
 
     public String getName() {
