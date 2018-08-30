@@ -1,12 +1,11 @@
 package nl.andrewlalis;
 
 import nl.andrewlalis.model.Organization;
-import nl.andrewlalis.model.database.Database;
 import nl.andrewlalis.ui.control.command.CommandExecutor;
 import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
 import nl.andrewlalis.ui.control.command.executables.DefineTaTeams;
 import nl.andrewlalis.ui.control.command.executables.GenerateAssignmentsRepo;
-import nl.andrewlalis.ui.control.command.executables.ReadStudentsFileToDB;
+import nl.andrewlalis.ui.control.command.executables.ReadStudentsFile;
 import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.util.CommandLine;
 import nl.andrewlalis.util.Logging;
@@ -40,15 +39,11 @@ public class Main {
         app.begin();
         app.setAccessToken(userOptions.get("token"));
 
-        Database db = new Database("database/initializer.sqlite");
-
-
-        executor.registerCommand("read_students", new ReadStudentsFileToDB(db));
+        // Initialize executable commands.
+        executor.registerCommand("read_students", new ReadStudentsFile(organization));
         executor.registerCommand("archive_all", new ArchiveRepos());
         executor.registerCommand("generate_assignments", new GenerateAssignmentsRepo());
         executor.registerCommand("define_ta_teams", new DefineTaTeams(app));
-
-        db.initialize();
 
         logger.info("GithubManager for Github Repositories in Educational Organizations. Program initialized.");
     }
