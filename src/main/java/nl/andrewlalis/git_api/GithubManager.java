@@ -2,9 +2,7 @@ package nl.andrewlalis.git_api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import nl.andrewlalis.model.Student;
-import nl.andrewlalis.model.StudentTeam;
-import nl.andrewlalis.model.TATeam;
+import nl.andrewlalis.model.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.StringEntity;
@@ -15,6 +13,7 @@ import org.kohsuke.github.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -51,6 +50,45 @@ public class GithubManager {
             logger.severe("Unable to make a GithubManager with organization name: " + organizationName + " and access token: " + accessToken);
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Gets a list of teams in the organization.
+     * @return A List of all TA teams in the organization.
+     */
+    public List<TATeam> getTeams() {
+        List<TATeam> teams = new ArrayList<>();
+        try {
+            for (Map.Entry<String, GHTeam> entry : this.organization.getTeams().entrySet()) {
+                TATeam team = new TATeam(entry.getKey(), -1);
+                team.setGithubTeam(entry.getValue());
+                for (GHUser user : entry.getValue().getMembers()) {
+                    team.addMember(new TeachingAssistant(-1, user.getName(), user.getEmail(), user.getLogin()));
+                }
+                teams.add(team);
+            }
+        } catch (IOException e) {
+            logger.severe("Could not get a list of teams in the organization.\n" + e.getMessage());
+            e.printStackTrace();
+        }
+        return teams;
+    }
+
+    /**
+     * Gets a list of all teaching assistants, or members, in the organization.
+     * @return A List of teaching assistants, and empty if an error occurred.
+     */
+    public List<TeachingAssistant> getMembers() {
+        List<TeachingAssistant> teachingAssistants = new ArrayList<>();
+        try {
+            for (GHUser member : this.organization.getMembers()) {
+                teachingAssistants.add(new TeachingAssistant(-1, member.getName(), member.getEmail(), member.getLogin()));
+            }
+        } catch (IOException e) {
+            logger.severe("Could not get list of members in the organization.\n" + e.getMessage());
+            e.printStackTrace();
+        }
+        return teachingAssistants;
     }
 
     /**

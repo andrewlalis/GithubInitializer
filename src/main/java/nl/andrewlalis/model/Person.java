@@ -27,6 +27,17 @@ public abstract class Person  {
     protected String githubUsername;
 
     /**
+     * Constructs a Person from only a github username, which is, in some cases, enough to perform a lot of actions.
+     * @param githubUsername The person's github username.
+     */
+    public Person(String githubUsername) {
+        this.number = -1;
+        this.name = null;
+        this.emailAddress = null;
+        this.githubUsername = githubUsername;
+    }
+
+    /**
      * Constructs a Person from all the basic information needed.
      * @param number Either an S- or P-Number without the letter prefix.
      * @param name The first, middle (if applicable) and last name.

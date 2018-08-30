@@ -10,6 +10,9 @@ import java.io.File;
 
 /**
  * Listens for when the user performs an action to read all students from a file, and output the contents to a database.
+ *
+ * Because filename and team size are not provided via arguments when a user clicks on a button, these are obtained via
+ * a JFileChooser and JOptionPane input dialog. If all inputs are valid, then the command is executed.
  */
 public class ReadStudentsFileListener extends ExecutableListener {
 
@@ -40,7 +43,7 @@ public class ReadStudentsFileListener extends ExecutableListener {
         if (fileResponse == JFileChooser.APPROVE_OPTION) {
             String teamSizeString = JOptionPane.showInputDialog(this.app, "Enter the student team size.", "Team Size", JOptionPane.QUESTION_MESSAGE);
             if (teamSizeString != null) {
-                this.executor.executeCommand("readstudents", new String[]{
+                this.executor.executeCommand("read_students", new String[]{
                         chooser.getSelectedFile().getName(),
                         teamSizeString
                 });

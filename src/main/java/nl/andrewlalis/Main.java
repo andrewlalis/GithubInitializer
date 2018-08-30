@@ -1,24 +1,16 @@
 package nl.andrewlalis;
 
 import nl.andrewlalis.model.database.Database;
-import nl.andrewlalis.git_api.GithubManager;
-import nl.andrewlalis.model.Student;
-import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.ui.control.command.CommandExecutor;
-import nl.andrewlalis.ui.control.command.Executable;
 import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
+import nl.andrewlalis.ui.control.command.executables.DefineTaTeams;
 import nl.andrewlalis.ui.control.command.executables.GenerateAssignmentsRepo;
 import nl.andrewlalis.ui.control.command.executables.ReadStudentsFileToDB;
 import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.util.CommandLine;
 import nl.andrewlalis.util.Logging;
-import nl.andrewlalis.util.TeamGenerator;
 
-import javax.swing.*;
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -45,11 +37,13 @@ public class Main {
         app.setAccessToken(userOptions.get("token"));
 
         Database db = new Database("database/initializer.sqlite");
-        db.initialize();
 
-        executor.registerCommand("readstudents", new ReadStudentsFileToDB(db));
-        executor.registerCommand("archiveall", new ArchiveRepos());
-        executor.registerCommand("generateassignments", new GenerateAssignmentsRepo());
+        executor.registerCommand("read_students", new ReadStudentsFileToDB(db));
+        executor.registerCommand("archive_all", new ArchiveRepos());
+        executor.registerCommand("generate_assignments", new GenerateAssignmentsRepo());
+        executor.registerCommand("define_ta_teams", new DefineTaTeams(app));
+
+        db.initialize();
 
         logger.info("GithubManager for Github Repositories in Educational Organizations. Program initialized.");
     }

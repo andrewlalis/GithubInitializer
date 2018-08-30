@@ -10,6 +10,9 @@ import nl.andrewlalis.ui.control.command.Executable;
  * Requires two arguments:
  * 1. The organization name.
  * 2. The organization's access token.
+ *
+ * Any additional arguments are added to a new String[] array which is passed along to child classes, so that they do
+ * not have to filter out the mandatory first two arguments.
  */
 public abstract class GithubExecutable implements Executable {
 

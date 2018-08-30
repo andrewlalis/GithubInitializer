@@ -50,7 +50,6 @@ public class InitializerApp extends JFrame {
      * Begins showing the application
      */
     public void begin() {
-        this.pack();
         this.setVisible(true);
     }
 
@@ -79,6 +78,8 @@ public class InitializerApp extends JFrame {
         mainPanel.add(this.initGithubManagerPanel(), BorderLayout.EAST);
 
         this.setContentPane(mainPanel);
+        this.pack();
+        this.setLocationRelativeTo(null);
 
         this.initLoggingHandler();
     }
