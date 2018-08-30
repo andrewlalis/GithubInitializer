@@ -2,10 +2,7 @@ package nl.andrewlalis;
 
 import nl.andrewlalis.model.Organization;
 import nl.andrewlalis.ui.control.command.CommandExecutor;
-import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
-import nl.andrewlalis.ui.control.command.executables.DefineTaTeams;
-import nl.andrewlalis.ui.control.command.executables.GenerateAssignmentsRepo;
-import nl.andrewlalis.ui.control.command.executables.ReadStudentsFile;
+import nl.andrewlalis.ui.control.command.executables.*;
 import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.util.CommandLine;
 import nl.andrewlalis.util.Logging;
@@ -40,10 +37,11 @@ public class Main {
         app.setAccessToken(userOptions.get("token"));
 
         // Initialize executable commands.
-        executor.registerCommand("read_students", new ReadStudentsFile(InitializerApp.organization));
+        executor.registerCommand("read_students", new ReadStudentsFile());
         executor.registerCommand("archive_all", new ArchiveRepos());
         executor.registerCommand("generate_assignments", new GenerateAssignmentsRepo());
         executor.registerCommand("define_ta_teams", new DefineTaTeams(app));
+        executor.registerCommand("list_errors", new ListErrors());
 
         logger.info("GithubManager for Github Repositories in Educational Organizations.\n" +
                 "© Andrew Lalis (2018), All rights reserved.\n" +

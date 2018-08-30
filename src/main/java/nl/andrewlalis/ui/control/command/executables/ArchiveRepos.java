@@ -2,8 +2,6 @@ package nl.andrewlalis.ui.control.command.executables;
 
 import nl.andrewlalis.git_api.GithubManager;
 
-import java.io.IOException;
-
 /**
  * Represents the action archive all repositories with a certain substring in their name.
  * It takes the following arguments:
@@ -17,12 +15,7 @@ public class ArchiveRepos extends GithubExecutable {
         if (args.length < 1) {
             return false;
         }
-        try {
-            manager.archiveAllRepositories(args[0]);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+        manager.archiveAllRepositories(args[0]);
+        return true;
     }
 }
