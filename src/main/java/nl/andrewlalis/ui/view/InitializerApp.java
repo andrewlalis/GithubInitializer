@@ -7,6 +7,7 @@ import nl.andrewlalis.ui.control.listeners.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -118,23 +119,22 @@ public class InitializerApp extends JFrame {
         JPanel commonActionsPanel = new JPanel();
         commonActionsPanel.setLayout(new BoxLayout(commonActionsPanel, BoxLayout.PAGE_AXIS));
 
-        JButton archiveAllButton = new JButton("Archive All");
-        archiveAllButton.addActionListener(new ArchiveAllListener(this.executor, this));
-        commonActionsPanel.add(archiveAllButton);
+        commonActionsPanel.add(this.generateButtonPanel("Archive All", new ArchiveAllListener(this.executor, this)));
+        commonActionsPanel.add(this.generateButtonPanel("Read Students File", new ReadStudentsFileListener(this.executor, this)));
+        commonActionsPanel.add(this.generateButtonPanel("Generate Assignments Repo", new GenerateAssignmentsRepoListener(this.executor, this)));
 
-        JButton generateStudentTeamsButton = new JButton("Read teams from file");
-        generateStudentTeamsButton.addActionListener(new ReadStudentsFileListener(this.executor, this));
-        commonActionsPanel.add(generateStudentTeamsButton);
+        // TODO: Enable this once the define teams dialog is complete.
+//        JButton defineTaTeamsButton = new JButton("Define TA Teams");
+//        defineTaTeamsButton.addActionListener(new DefineTaTeamsListener(this.executor, this));
+//        commonActionsPanel.add(f);
 
-        JButton generateAssignmentsRepoButton = new JButton("Generate Assignments Repo");
-        generateAssignmentsRepoButton.addActionListener(new GenerateAssignmentsRepoListener(this.executor, this));
-        commonActionsPanel.add(generateAssignmentsRepoButton);
+        commonActionsPanel.add(this.generateButtonPanel("Delete Repos", new DeleteReposListener(this.executor, this)));
 
-        JButton defineTaTeamsButton = new JButton("Define TA Teams");
-        defineTaTeamsButton.addActionListener(new DefineTaTeamsListener(this.executor, this));
-        commonActionsPanel.add(defineTaTeamsButton);
+        // Extra panel to push buttons to the top.
+        JPanel buttonAlignmentPanel = new JPanel(new BorderLayout());
+        buttonAlignmentPanel.add(commonActionsPanel, BorderLayout.NORTH);
 
-        githubManagerPanel.add(commonActionsPanel, BorderLayout.CENTER);
+        githubManagerPanel.add(buttonAlignmentPanel, BorderLayout.CENTER);
 
         return githubManagerPanel;
     }
@@ -188,6 +188,20 @@ public class InitializerApp extends JFrame {
         newPanel.add(textField);
         newPanel.setBorder(BorderFactory.createEmptyBorder(5, 2, 5, 2));
         return newPanel;
+    }
+
+    /**
+     * Generates a button with an attached action listener.
+     * @param buttonText The text to display on the button.
+     * @param listener The listener to attach to the button.
+     * @return A BorderLayout JPanel which contains the button in the CENTER location.
+     */
+    private JPanel generateButtonPanel(String buttonText, ActionListener listener) {
+        JPanel panel = new JPanel(new BorderLayout());
+        JButton button = new JButton(buttonText);
+        button.addActionListener(listener);
+        panel.add(button, BorderLayout.CENTER);
+        return panel;
     }
 
     /**

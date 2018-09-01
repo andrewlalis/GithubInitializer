@@ -22,6 +22,9 @@ public class ListErrors implements Executable {
     @Override
     public boolean execute(String[] args) {
         StringBuilder sb = new StringBuilder("Runtime Errors:\n");
+        if (InitializerApp.organization.getErrors().isEmpty()) {
+            sb.append("None");
+        }
         for (Error error : InitializerApp.organization.getErrors()) {
             sb.append(error);
         }

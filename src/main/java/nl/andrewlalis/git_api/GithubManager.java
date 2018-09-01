@@ -168,6 +168,7 @@ public class GithubManager {
             if (repo.getName().contains(substring)) {
                 try {
                     repo.delete();
+                    logger.info("Deleted repository: " + repo.getName());
                 } catch (IOException e) {
                     InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not delete repository: " + repo.getName()));
                     e.printStackTrace();
