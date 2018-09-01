@@ -20,6 +20,13 @@ public class Organization extends Observable {
     private List<StudentTeam> studentTeams;
 
     /**
+     * A list of all teaching assistant teams in this organization. These are generated from requests to the Github API
+     * and possibly supplementary information. Each teaching assistant team maintains a list of all student teams for
+     * which it is responsible.
+     */
+    private List<TATeam> taTeams;
+
+    /**
      * A queue of errors that accumulates as the program runs. These will be output to the user after execution of
      * critical sections, so that inevitable errors due to input imperfections are not overlooked.
      */
@@ -30,6 +37,7 @@ public class Organization extends Observable {
      */
     public Organization() {
         this.studentTeams = new ArrayList<>();
+        this.taTeams = new ArrayList<>();
         this.errors = new ArrayList<>();
     }
 
@@ -41,6 +49,16 @@ public class Organization extends Observable {
         return this.studentTeams.isEmpty();
     }
 
+    /**
+     * Adds an error to the list of accumulated errors.
+     * @param newError The newly generated error to add.
+     */
+    public void addError(Error newError) {
+        this.errors.add(newError);
+        this.setChanged();
+        this.notifyObservers();
+    }
+
     // GETTERS
     public List<StudentTeam> getStudentTeams() {
         return this.studentTeams;
@@ -50,6 +68,10 @@ public class Organization extends Observable {
         return this.errors;
     }
 
+    public List<TATeam> getTaTeams() {
+        return this.taTeams;
+    }
+
     // SETTERS
     public void setStudentTeams(List<StudentTeam> teams) {
         this.studentTeams = teams;
@@ -57,12 +79,8 @@ public class Organization extends Observable {
         this.notifyObservers();
     }
 
-    /**
-     * Adds an error to the list of accumulated errors.
-     * @param newError The newly generated error to add.
-     */
-    public void addError(Error newError) {
-        this.errors.add(newError);
+    public void setTaTeams(List<TATeam> teams) {
+        this.taTeams = teams;
         this.setChanged();
         this.notifyObservers();
     }

@@ -1,6 +1,7 @@
-package nl.andrewlalis.ui.view;
+package nl.andrewlalis.ui.view.dialogs;
 
 import nl.andrewlalis.git_api.GithubManager;
+import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.ui.view.list_models.TATeamListCellRenderer;
 import nl.andrewlalis.ui.view.list_models.TATeamListModel;
 import nl.andrewlalis.ui.view.list_models.TeachingAssistantListCellRenderer;

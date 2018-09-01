@@ -1,7 +1,7 @@
 package nl.andrewlalis.ui.control.command.executables;
 
 import nl.andrewlalis.git_api.GithubManager;
-import nl.andrewlalis.ui.view.DefineTaTeamsDialog;
+import nl.andrewlalis.ui.view.dialogs.DefineTaTeamsDialog;
 import nl.andrewlalis.ui.view.InitializerApp;
 
 /**

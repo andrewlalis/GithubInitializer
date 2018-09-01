@@ -23,6 +23,11 @@ public class TATeam extends Team {
     private GHTeam githubTeam;
 
     /**
+     * A list of all student teams for which this TA team is responsible.
+     */
+    private List<StudentTeam> studentTeams;
+
+    /**
      * Constructs a team without any teaching assistant members.
      * @param name The name of the team.
      * @param id The unique identifier for this team.
@@ -40,6 +45,15 @@ public class TATeam extends Team {
         return Arrays.copyOf(this.getMembers(), this.memberCount(), TeachingAssistant[].class);
     }
 
+    /**
+     * Adds the given student team to the list of teams that this TA team is responsible for.
+     * @param team A student team.
+     */
+    public void addStudentTeam(StudentTeam team) {
+        this.studentTeams.add(team);
+    }
+
+    // GETTERS
     public String getName() {
         return this.name;
     }
@@ -48,6 +62,11 @@ public class TATeam extends Team {
         return this.githubTeam;
     }
 
+    public List<StudentTeam> getStudentTeams() {
+        return this.studentTeams;
+    }
+
+    // SETTERS
     public void setGithubTeam(GHTeam team) {
         this.githubTeam = team;
     }

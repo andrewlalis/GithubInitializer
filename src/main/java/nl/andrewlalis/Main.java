@@ -43,6 +43,7 @@ public class Main {
         executor.registerCommand("define_ta_teams", new DefineTaTeams(app));
         executor.registerCommand("list_errors", new ListErrors());
         executor.registerCommand("delete_repos", new DeleteRepos());
+        executor.registerCommand("delegate_student_teams", new DelegateStudentTeams(app));
 
         logger.info("GithubManager for Github Repositories in Educational Organizations.\n" +
                 "© Andrew Lalis (2018), All rights reserved.\n" +

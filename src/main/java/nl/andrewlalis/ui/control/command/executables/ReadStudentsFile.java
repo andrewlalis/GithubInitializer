@@ -1,9 +1,6 @@
 package nl.andrewlalis.ui.control.command.executables;
 
-import nl.andrewlalis.model.Organization;
 import nl.andrewlalis.model.StudentTeam;
-import nl.andrewlalis.model.error.Error;
-import nl.andrewlalis.model.error.Severity;
 import nl.andrewlalis.ui.control.command.Executable;
 import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.util.FileUtils;
