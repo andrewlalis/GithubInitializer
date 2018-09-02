@@ -83,10 +83,13 @@ public abstract class Person  {
             return false;
         }
         Person p = (Person)o;
+        boolean emailSame = (p.getEmailAddress() != null && p.getEmailAddress().equals(this.getEmailAddress()));
+        boolean githubSame = (p.getGithubUsername() != null && p.getGithubUsername().equals(this.getGithubUsername()));
+        boolean nameSame = (p.getName() != null && p.getName().equalsIgnoreCase(this.getName()));
         return p.getNumber() == this.getNumber()
-                || p.getEmailAddress().equals(this.getEmailAddress())
-                || p.getGithubUsername().equals(this.getGithubUsername())
-                || p.getName().equalsIgnoreCase(this.getName());
+                || emailSame
+                || githubSame
+                || nameSame;
     }
 
     /**

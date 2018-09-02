@@ -35,6 +35,7 @@ public class TATeam extends Team {
     public TATeam(String name, int id) {
         super(id);
         this.name = name;
+        this.studentTeams = new ArrayList<>();
     }
 
     /**

@@ -1,14 +1,13 @@
-package nl.andrewlalis.ui.view.dialogs;
+package nl.andrewlalis.ui.view.dialogs.delegateStudentTeams;
 
 import nl.andrewlalis.git_api.GithubManager;
-import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.model.TATeam;
 import nl.andrewlalis.ui.view.InitializerApp;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +39,11 @@ public class DelegateStudentTeamsDialog extends JDialog {
      */
     private final int totalStudentTeamsCount;
 
+    /**
+     * A variable used to check if the result of this dialog was successful.
+     */
+    private boolean successful;
+
     public DelegateStudentTeamsDialog(InitializerApp parentApp, GithubManager manager) {
         super(parentApp, "Delegate Student Teams", true);
         this.manager = manager;
@@ -64,6 +68,7 @@ public class DelegateStudentTeamsDialog extends JDialog {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(this.generateTopPanel(), BorderLayout.NORTH);
         mainPanel.add(this.generateSpinnersPanel(), BorderLayout.CENTER);
+        mainPanel.add(this.generateSubmitPanel(), BorderLayout.SOUTH);
 
         this.setContentPane(mainPanel);
         this.pack();
@@ -92,6 +97,12 @@ public class DelegateStudentTeamsDialog extends JDialog {
         return spinnersPanel;
     }
 
+    /**
+     * Generates a panel containing a label and JSpinner for a particular TATeam. Also adds a change listener which
+     * makes sure that the total number of student teams given to TATeams never exceeds the total.
+     * @param team The team to link to this panel.
+     * @return The JPanel created.
+     */
     private JPanel generateTeamSpinnerPanel(TATeam team) {
         JPanel panel = new JPanel(new BorderLayout());
         JLabel teamLabel = new JLabel(team.getName());
@@ -105,7 +116,7 @@ public class DelegateStudentTeamsDialog extends JDialog {
                 studentTeamsMatched += (int)teamSpinner.getValue();
             }
             if (this.totalStudentTeamsCount - studentTeamsMatched < 0) {
-                s.setValue((int)s.getValue() + 1); // TODO: FIX! Causes stack overflow.
+                s.setValue(s.getPreviousValue());
             } else {
                 this.unmatchedStudentsCounter.setValue(this.totalStudentTeamsCount - studentTeamsMatched);
             }
@@ -113,6 +124,39 @@ public class DelegateStudentTeamsDialog extends JDialog {
         this.teamSpinners.add(spinner);
         panel.add(spinner, BorderLayout.EAST);
         return panel;
+    }
+
+    /**
+     * Creates the panel at the bottom of the dialog which shows the 'okay' and 'cancel' buttons.
+     * @return The JPanel created.
+     */
+    private JPanel generateSubmitPanel() {
+        JPanel panel = new JPanel();
+        JButton okayButton = new JButton("Okay");
+        okayButton.addActionListener(actionEvent -> {
+            if (unmatchedStudentsCounter.getValue() > 0) {
+                JOptionPane.showMessageDialog(getParent(), "There are still teams remaining!", "Not all teams assigned.", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                successful = true;
+                dispose();
+            }
+        });
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(actionEvent -> {
+            successful = false;
+            dispose();
+        });
+        panel.add(okayButton);
+        panel.add(cancelButton);
+        return panel;
+    }
+
+    /**
+     * Determines if the user successfully delegated all student teams to TATeams.
+     * @return True if every student team is (theoretically) matched to a TATeam.
+     */
+    public boolean isSuccessful() {
+        return this.successful;
     }
 
     /**

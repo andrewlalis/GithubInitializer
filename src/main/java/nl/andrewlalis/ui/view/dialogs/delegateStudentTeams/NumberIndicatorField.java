@@ -1,4 +1,4 @@
-package nl.andrewlalis.ui.view.dialogs;
+package nl.andrewlalis.ui.view.dialogs.delegateStudentTeams;
 
 import javax.swing.*;
 

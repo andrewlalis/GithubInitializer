@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Logger;
 
 /**
@@ -65,11 +66,12 @@ public class GithubManager {
     public List<TATeam> getTeams() {
         List<TATeam> teams = new ArrayList<>();
         try {
+            Random rand = new Random();
             for (Map.Entry<String, GHTeam> entry : this.organization.getTeams().entrySet()) {
-                TATeam team = new TATeam(entry.getKey(), -1);
+                TATeam team = new TATeam(entry.getKey(), entry.getValue().getId());
                 team.setGithubTeam(entry.getValue());
-                for (GHUser user : entry.getValue().getMembers()) {
-                    team.addMember(new TeachingAssistant(-1, user.getName(), user.getEmail(), user.getLogin()));
+                for (GHUser user : entry.getValue().listMembers().asList()) {
+                    team.addMember(new TeachingAssistant(rand.nextInt(), user.getName(), user.getEmail(), user.getLogin()));
                 }
                 teams.add(team);
             }
@@ -135,7 +137,7 @@ public class GithubManager {
      * @param taTeam The team of teaching assistants that is responsible for these students.
      * @param prefix The prefix to append to the front of the repo name.
      */
-    public void setupStudentTeam(StudentTeam team, TATeam taTeam, String prefix) {
+    public void setupStudentRepo(StudentTeam team, TATeam taTeam, String prefix) {
         // First check that the assignments repo exists, otherwise no invitations can be sent.
         if (this.assignmentsRepo == null) {
             logger.warning("Assignments repository must be created before student repositories.");
