@@ -1,31 +1,30 @@
 package nl.andrewlalis.ui.control.command.executables;
 
 import nl.andrewlalis.model.StudentTeam;
-import nl.andrewlalis.model.database.Database;
 import nl.andrewlalis.ui.control.command.Executable;
+import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.util.FileUtils;
 
 import java.util.List;
 
 /**
  * Execute this class to read students from a supplied filename and teamsize, and store their
- * information in the database.
+ * information in the application's organization model.
  * Requires the following arguments:
  *
  * 1. filename
  * 2. teamsize
  */
-public class ReadStudentsFileToDB implements Executable {
+public class ReadStudentsFile implements Executable {
 
     /**
-     * The database used to store the students.
+     * A reference to the current application, which contains the model for storing information.
      */
-    private Database db;
+    private InitializerApp app;
 
-    public ReadStudentsFileToDB(Database db) {
-        this.db = db;
+    public ReadStudentsFile(InitializerApp app) {
+        this.app = app;
     }
-
 
     @Override
     public boolean execute(String[] args) {
@@ -38,6 +37,7 @@ public class ReadStudentsFileToDB implements Executable {
         if (teams == null) {
             return false;
         }
-        return this.db.storeStudentTeams(teams);
+        this.app.getOrganization().setStudentTeams(teams);
+        return true;
     }
 }

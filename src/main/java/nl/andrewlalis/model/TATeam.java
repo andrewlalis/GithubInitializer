@@ -1,18 +1,16 @@
 package nl.andrewlalis.model;
 
-import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHTeam;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Represents a teaching assistant team, which is itself a 'team' in the organization. This class is used for parsing
  * json from requests to github to get a list of all teams in the organization.
  */
-public class TATeam {
-
-    private List<TeachingAssistant> teachingAssistants;
+public class TATeam extends Team {
 
     /**
      * The team's display name.
@@ -20,14 +18,14 @@ public class TATeam {
     private String name;
 
     /**
-     * The team's unique identifier.
-     */
-    private int id;
-
-    /**
      * The Github team associated with this team.
      */
     private GHTeam githubTeam;
+
+    /**
+     * A list of all student teams for which this TA team is responsible.
+     */
+    private List<StudentTeam> studentTeams;
 
     /**
      * Constructs a team without any teaching assistant members.
@@ -35,29 +33,28 @@ public class TATeam {
      * @param id The unique identifier for this team.
      */
     public TATeam(String name, int id) {
+        super(id);
         this.name = name;
-        this.id = id;
-        this.teachingAssistants = new ArrayList<TeachingAssistant>();
+        this.studentTeams = new ArrayList<>();
     }
 
     /**
-     * Constructs a team with a list of teaching assistants that are part of it.
-     * @param teachingAssistants The list of teaching assistants that are part of the team.
+     * Gets a list of teaching assistants, as a convenience method to avoid having to do an array cast.
+     * @return An array of all teaching assistant members of this team.
      */
-    public TATeam(List<TeachingAssistant> teachingAssistants, String name, int id) {
-        this.teachingAssistants = teachingAssistants;
-        this.name = name;
-        this.id = id;
+    public TeachingAssistant[] getTeachingAssistants() {
+        return Arrays.copyOf(this.getMembers(), this.memberCount(), TeachingAssistant[].class);
     }
 
     /**
-     * Gets the unique identification for this TA team.
-     * @return An integer representing the id of this team.
+     * Adds the given student team to the list of teams that this TA team is responsible for.
+     * @param team A student team.
      */
-    public int getId() {
-        return this.id;
+    public void addStudentTeam(StudentTeam team) {
+        this.studentTeams.add(team);
     }
 
+    // GETTERS
     public String getName() {
         return this.name;
     }
@@ -66,6 +63,11 @@ public class TATeam {
         return this.githubTeam;
     }
 
+    public List<StudentTeam> getStudentTeams() {
+        return this.studentTeams;
+    }
+
+    // SETTERS
     public void setGithubTeam(GHTeam team) {
         this.githubTeam = team;
     }

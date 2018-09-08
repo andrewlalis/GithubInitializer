@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -26,11 +27,19 @@ public class OutputTextHandler extends Handler {
     public void publish(LogRecord logRecord) {
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String dateString = df.format(new Date(logRecord.getMillis()));
-        String sourceLocationString = logRecord.getSourceClassName() + "::" + logRecord.getSourceMethodName();
         this.outputPane.printStyled(dateString + ' ', "gray_italics");
-        this.outputPane.printStyled(logRecord.getLevel().getName() + ": ", "bold");
-        this.outputPane.printStyled(sourceLocationString + "\n\t", "bold");
-        this.outputPane.printStyled(logRecord.getMessage() + '\n', "smaller");
+        String style = "default";
+        Level level = logRecord.getLevel();
+        if (level == Level.SEVERE) {
+            style = "error_red";
+        } else if (level == Level.FINE
+        || level == Level.FINER
+        || level == Level.FINEST) {
+            style = "smaller";
+        } else if (level == Level.WARNING) {
+            style = "warning_orange";
+        }
+        this.outputPane.printStyled(logRecord.getMessage() + '\n', style);
     }
 
     @Override

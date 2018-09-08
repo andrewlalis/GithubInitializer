@@ -16,12 +16,18 @@ CREATE TABLE IF NOT EXISTS persons (
   email_address TEXT NOT NULL,
   github_username TEXT NOT NULL UNIQUE,
   person_type_id INTEGER NOT NULL,
+  team_id INTEGER NULL,
   FOREIGN KEY (person_type_id)
     REFERENCES person_types(id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (team_id)
+    REFERENCES teams(id)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
 );
 
+-- Team tables for all types of teams.
 CREATE TABLE IF NOT EXISTS team_types (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL UNIQUE
@@ -33,6 +39,22 @@ CREATE TABLE IF NOT EXISTS teams (
   FOREIGN KEY (team_type_id)
     REFERENCES team_types(id)
     ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS team_members (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  team_id INTEGER NOT NULL,
+  person_id INTEGER NOT NULL,
+  FOREIGN KEY (team_id)
+    REFERENCES teams(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (person_id)
+    REFERENCES persons(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  UNIQUE (team_id, person_id)
 );
 
 CREATE TABLE IF NOT EXISTS teaching_assistant_teams (
@@ -47,7 +69,6 @@ CREATE TABLE IF NOT EXISTS teaching_assistant_teams (
 CREATE TABLE IF NOT EXISTS student_teams (
   team_id INTEGER PRIMARY KEY,
   repository_name TEXT,
-  group_id INTEGER NOT NULL UNIQUE,
   teaching_assistant_team_id INTEGER,
   FOREIGN KEY (team_id)
     REFERENCES teams(id)
@@ -59,16 +80,12 @@ CREATE TABLE IF NOT EXISTS student_teams (
     ON UPDATE CASCADE
 );
 
+-- Student-specific tables.
 CREATE TABLE IF NOT EXISTS students (
   person_id INTEGER PRIMARY KEY,
-  team_id INTEGER NOT NULL,
   chose_partner INTEGER NOT NULL,
   FOREIGN KEY (person_id)
     REFERENCES persons(id)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  FOREIGN KEY (team_id)
-    REFERENCES teams(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
@@ -83,15 +100,11 @@ CREATE TABLE IF NOT EXISTS student_preferred_partners (
   UNIQUE (student_id, partner_id)
 );
 
+-- TeachingAssistant-specific tables.
 CREATE TABLE IF NOT EXISTS teaching_assistants (
   person_id INTEGER PRIMARY KEY,
-  team_id INTEGER NOT NULL,
   FOREIGN KEY (person_id)
     REFERENCES persons(id)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  FOREIGN KEY (team_id)
-    REFERENCES teams(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );

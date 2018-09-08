@@ -2,6 +2,9 @@ package nl.andrewlalis.util;
 
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
+import nl.andrewlalis.model.error.Error;
+import nl.andrewlalis.model.error.Severity;
+import nl.andrewlalis.ui.view.InitializerApp;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
@@ -150,8 +153,18 @@ public class TeamGenerator {
                 }
             }
             Student s = new Student(Integer.parseInt(record.get(3)), record.get(2), record.get(1), record.get(4), preferredIds);
+            if (studentMap.containsValue(s)) {
+                logger.warning("Duplicate entry found for student: " + s + "\nOverwriting previous value.");
+            }
             studentMap.put(s.getNumber(), s);
         }
+
+        // Perform a safety check to ensure all preferred partners are valid students.
+        for (Map.Entry<Integer, Student> entry : studentMap.entrySet()) {
+            // Remove any ids that don't exist in the whole list of students.
+            entry.getValue().getPreferredPartners().removeIf(partnerId -> !studentMap.containsKey(partnerId));
+        }
+        // At this point, all students are valid, and all preferred partners are valid.
         logger.fine("Read " + studentMap.size() + " students from records.");
         return studentMap;
     }

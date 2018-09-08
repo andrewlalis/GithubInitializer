@@ -1,10 +1,7 @@
 package nl.andrewlalis.ui.view;
 
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +23,9 @@ public class OutputTextPane extends JTextPane {
         this.initStyles();
         this.setEditable(false);
         this.setAutoscrolls(true);
+
+        DefaultCaret caret = (DefaultCaret) this.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
     }
 
     private void initStyles() {
@@ -47,6 +47,14 @@ public class OutputTextPane extends JTextPane {
         Style smaller = this.addStyle("smaller", defaultStyle);
         smaller.addAttribute(StyleConstants.FontSize, 11);
         this.styles.put("smaller", smaller);
+
+        Style errorRed = this.addStyle("error_red", bold);
+        errorRed.addAttribute(StyleConstants.Foreground, new Color(255, 0, 0));
+        this.styles.put("error_red", errorRed);
+
+        Style warningOrange = this.addStyle("warning_orange", defaultStyle);
+        warningOrange.addAttribute(StyleConstants.Foreground, new Color(255, 127, 0));
+        this.styles.put("warning_orange", warningOrange);
     }
 
     /**

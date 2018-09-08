@@ -27,6 +27,17 @@ public abstract class Person  {
     protected String githubUsername;
 
     /**
+     * Constructs a Person from only a github username, which is, in some cases, enough to perform a lot of actions.
+     * @param githubUsername The person's github username.
+     */
+    public Person(String githubUsername) {
+        this.number = -1;
+        this.name = null;
+        this.emailAddress = null;
+        this.githubUsername = githubUsername;
+    }
+
+    /**
      * Constructs a Person from all the basic information needed.
      * @param number Either an S- or P-Number without the letter prefix.
      * @param name The first, middle (if applicable) and last name.
@@ -72,10 +83,13 @@ public abstract class Person  {
             return false;
         }
         Person p = (Person)o;
+        boolean emailSame = (p.getEmailAddress() != null && p.getEmailAddress().equals(this.getEmailAddress()));
+        boolean githubSame = (p.getGithubUsername() != null && p.getGithubUsername().equals(this.getGithubUsername()));
+        boolean nameSame = (p.getName() != null && p.getName().equalsIgnoreCase(this.getName()));
         return p.getNumber() == this.getNumber()
-                || p.getEmailAddress().equals(this.getEmailAddress())
-                || p.getGithubUsername().equals(this.getGithubUsername())
-                || p.getName().equalsIgnoreCase(this.getName());
+                || emailSame
+                || githubSame
+                || nameSame;
     }
 
     /**

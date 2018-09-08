@@ -2,11 +2,17 @@ package nl.andrewlalis.model;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Represents one student's github information.
  */
 public class Student extends Person {
+
+    private static final Logger logger = Logger.getLogger(Student.class.getName());
+    static {
+        logger.setParent(Logger.getGlobal());
+    }
 
     /**
      * A list of partners that the student has said that they would like to be partners with.

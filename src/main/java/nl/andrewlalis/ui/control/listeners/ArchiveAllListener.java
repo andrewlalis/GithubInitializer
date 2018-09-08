@@ -19,7 +19,7 @@ public class ArchiveAllListener extends ExecutableListener {
     public void actionPerformed(ActionEvent actionEvent) {
         String response = JOptionPane.showInputDialog(this.app, "Enter a substring to archive repositories by.", "Enter a substring", JOptionPane.QUESTION_MESSAGE);
         if (response != null) {
-            this.executor.executeCommand("archiveall", new String[]{
+            this.executor.executeCommand("archive_all", new String[]{
                     this.app.getOrganizationName(),
                     this.app.getAccessToken(),
                     response
