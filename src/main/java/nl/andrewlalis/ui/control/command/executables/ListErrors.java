@@ -26,7 +26,7 @@ public class ListErrors implements Executable {
             sb.append("None");
         }
         for (Error error : InitializerApp.organization.getErrors()) {
-            sb.append(error);
+            sb.append(error).append('\n');
         }
         logger.info(sb.toString());
         return true;
