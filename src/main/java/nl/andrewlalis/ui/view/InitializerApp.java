@@ -34,6 +34,8 @@ public class InitializerApp extends JFrame {
     private JTextField organizationField = new JTextField();
     private JTextField accessTokenField = new JTextField();
 
+    private JCheckBox privateCheckbox = new JCheckBox("Private");
+
     /**
      * The executor responsible for performing meaningful actions.
      */
@@ -113,6 +115,8 @@ public class InitializerApp extends JFrame {
         this.organizationField.setText("InitializerTesting");
         infoInputPanel.add(generateTextFieldPanel("Access Token", this.accessTokenField));
         this.accessTokenField.setText("haha get your own");
+        infoInputPanel.add(this.privateCheckbox);
+        this.privateCheckbox.disable();
 
         githubManagerPanel.add(infoInputPanel, BorderLayout.NORTH);
 
@@ -220,6 +224,14 @@ public class InitializerApp extends JFrame {
      */
     public String getAccessToken() {
         return this.accessTokenField.getText().trim();
+    }
+
+    /**
+     * Gets whether or not the 'private' checkbox is selected.
+     * @return True if the user wishes for repositories to be made private, or false otherwise.
+     */
+    public boolean isPrivateChecked() {
+        return this.privateCheckbox.isSelected();
     }
 
     public Organization getOrganization() {

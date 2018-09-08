@@ -6,9 +6,6 @@ import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.model.TATeam;
 import nl.andrewlalis.model.TeachingAssistant;
-import nl.andrewlalis.model.error.Error;
-import nl.andrewlalis.model.error.Severity;
-import nl.andrewlalis.ui.view.InitializerApp;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.StringEntity;
@@ -115,7 +112,7 @@ public class GithubManager {
             logger.fine("Deleted pre-existing assignments repository.");
         }
 
-        this.assignmentsRepo = this.createRepository(assignmentsRepoName, team, description, false, true, false);
+        this.assignmentsRepo = this.createRepository(assignmentsRepoName, team, description, false, true, true);
 
         if (this.assignmentsRepo == null) {
             logger.severe("Could not create assignments repository.");
@@ -143,7 +140,7 @@ public class GithubManager {
             return;
         }
 
-        GHRepository repo = this.createRepository(team.generateUniqueName(prefix), taTeam.getGithubTeam(), team.generateRepoDescription(), false, true, false);
+        GHRepository repo = this.createRepository(team.generateUniqueName(prefix), taTeam.getGithubTeam(), team.generateRepoDescription(), false, true, true);
 
         if (repo == null) {
             logger.severe("Repository for student team " + team.getId() + " could not be created.");

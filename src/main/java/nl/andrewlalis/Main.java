@@ -1,6 +1,5 @@
 package nl.andrewlalis;
 
-import nl.andrewlalis.model.Organization;
 import nl.andrewlalis.ui.control.command.CommandExecutor;
 import nl.andrewlalis.ui.control.command.executables.*;
 import nl.andrewlalis.ui.view.InitializerApp;
