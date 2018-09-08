@@ -44,7 +44,7 @@ public class ReadStudentsFileListener extends ExecutableListener {
             String teamSizeString = JOptionPane.showInputDialog(this.app, "Enter the student team size.", "Team Size", JOptionPane.QUESTION_MESSAGE);
             if (teamSizeString != null) {
                 this.executor.executeCommand("read_students", new String[]{
-                        chooser.getSelectedFile().getName(),
+                        chooser.getSelectedFile().getAbsolutePath(),
                         teamSizeString
                 });
             }

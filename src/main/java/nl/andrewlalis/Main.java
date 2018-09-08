@@ -44,6 +44,7 @@ public class Main {
         executor.registerCommand("list_errors", new ListErrors());
         executor.registerCommand("delete_repos", new DeleteRepos());
         executor.registerCommand("delegate_student_teams", new DelegateStudentTeams(app));
+        executor.registerCommand("setup_student_repos", new SetupStudentRepos());
 
         logger.info("GithubManager for Github Repositories in Educational Organizations.\n" +
                 "© Andrew Lalis (2018), All rights reserved.\n" +

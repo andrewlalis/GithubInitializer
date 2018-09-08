@@ -155,6 +155,10 @@ public class TeamGenerator {
                 }
             }
             Student s = new Student(Integer.parseInt(record.get(3)), record.get(2), record.get(1), record.get(4), preferredIds);
+            if (studentMap.containsValue(s)) {
+                InitializerApp.organization.addError(new Error(Severity.HIGH, "Duplicate entries for student:\n" + s + "\nSince records are in chronological order, this more recent duplicate will override the previous value."));
+                logger.warning("Duplicate entry found for student: " + s + "\nOverwriting previous value.");
+            }
             studentMap.put(s.getNumber(), s);
         }
         logger.fine("Read " + studentMap.size() + " students from records.");
