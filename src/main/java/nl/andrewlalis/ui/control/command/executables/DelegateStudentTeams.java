@@ -38,7 +38,7 @@ public class DelegateStudentTeams extends GithubExecutable {
 
     @Override
     protected boolean executeWithManager(GithubManager manager, String[] args) {
-        if (InitializerApp.organization.getStudentTeams().isEmpty()) {
+        if (this.app.getOrganization().getStudentTeams().isEmpty()) {
             JOptionPane.showMessageDialog(this.app, "There are no student teams! Please read some from a CSV file first.", "No Student Teams", JOptionPane.ERROR_MESSAGE);
             return false;
         }
@@ -47,7 +47,7 @@ public class DelegateStudentTeams extends GithubExecutable {
 
         if (dialog.isSuccessful()) {
             Map<TATeam, Integer> results = dialog.getResult();
-            List<StudentTeam> teams = InitializerApp.organization.getStudentTeams();
+            List<StudentTeam> teams = this.app.getOrganization().getStudentTeams();
             int initialTeamsSize = teams.size();
             Stack<StudentTeam> teamsStack = new Stack<>();
             // Randomize the ordering of the student teams here.
@@ -61,7 +61,7 @@ public class DelegateStudentTeams extends GithubExecutable {
                 for (int i = 0; i < entry.getValue(); i++) {
                     team.addStudentTeam(teamsStack.pop());
                 }
-                InitializerApp.organization.getTaTeams().add(team);
+                this.app.getOrganization().getTaTeams().add(team);
             }
         } else {
             return false;

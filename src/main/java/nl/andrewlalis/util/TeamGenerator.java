@@ -39,7 +39,6 @@ public class TeamGenerator {
         logger.fine("Generating teams of size " + teamSize);
         if (teamSize < 1) {
             logger.severe("Invalid team size.");
-            InitializerApp.organization.addError(new Error(Severity.CRITICAL, "Invalid team size while generating teams from CSV."));
             throw new IllegalArgumentException("StudentTeam size must be greater than or equal to 1. Got " + teamSize);
         }
         logger.fine("Parsing CSV file.");
@@ -51,7 +50,6 @@ public class TeamGenerator {
             studentMap = readAllStudents(records, teamSize);
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.severe("StudentTeam size does not match column count in records.");
-            InitializerApp.organization.addError(new Error(Severity.CRITICAL, "Team size does not match column count in records."));
             throw new IllegalArgumentException("StudentTeam size does not match column count in records.");
         }
 
@@ -156,11 +154,17 @@ public class TeamGenerator {
             }
             Student s = new Student(Integer.parseInt(record.get(3)), record.get(2), record.get(1), record.get(4), preferredIds);
             if (studentMap.containsValue(s)) {
-                InitializerApp.organization.addError(new Error(Severity.HIGH, "Duplicate entries for student:\n" + s + "\nSince records are in chronological order, this more recent duplicate will override the previous value."));
                 logger.warning("Duplicate entry found for student: " + s + "\nOverwriting previous value.");
             }
             studentMap.put(s.getNumber(), s);
         }
+
+        // Perform a safety check to ensure all preferred partners are valid students.
+        for (Map.Entry<Integer, Student> entry : studentMap.entrySet()) {
+            // Remove any ids that don't exist in the whole list of students.
+            entry.getValue().getPreferredPartners().removeIf(partnerId -> !studentMap.containsKey(partnerId));
+        }
+        // At this point, all students are valid, and all preferred partners are valid.
         logger.fine("Read " + studentMap.size() + " students from records.");
         return studentMap;
     }

@@ -111,7 +111,6 @@ public class GithubManager {
         // Check if the repository already exists.
         GHRepository existingRepo = this.organization.getRepository(assignmentsRepoName);
         if (existingRepo != null) {
-            InitializerApp.organization.addError(new Error(Severity.MINOR, "Assignments repository already existed, deleting it."));
             existingRepo.delete();
             logger.fine("Deleted pre-existing assignments repository.");
         }
@@ -172,7 +171,7 @@ public class GithubManager {
                     repo.delete();
                     logger.info("Deleted repository: " + repo.getName());
                 } catch (IOException e) {
-                    InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not delete repository: " + repo.getName()));
+                    logger.severe("Could not delete repository: " + repo.getName());
                     e.printStackTrace();
                 }
             }
@@ -212,7 +211,8 @@ public class GithubManager {
             }
             logger.info("Archived repository: " + repo.getFullName());
         } catch (IOException e) {
-            InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not archive repository: " + repo.getName()));
+            logger.severe("Could not archive repository: " + repo.getName());
+            e.printStackTrace();
         }
     }
 
@@ -233,8 +233,8 @@ public class GithubManager {
             repo.addCollaborators(users);
             this.assignmentsRepo.addCollaborators(users);
         } catch (IOException e) {
-            InitializerApp.organization.addError(new Error(Severity.HIGH, "Students in team: " + team + " could not be added as collaborators to assignments repo or their repository."));
-            logger.warning("Could not add students as collaborators to assignments or their repo.");
+            logger.severe("Could not add students as collaborators to assignments or their repo.\n" + team);
+            e.printStackTrace();
         }
     }
 
@@ -248,8 +248,8 @@ public class GithubManager {
             taTeam.add(studentRepo, GHOrganization.Permission.ADMIN);
             logger.fine("Added team " + taTeam.getName() + " as admin to repository: " + studentRepo.getName());
         } catch (IOException e) {
-            InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not add TA Team: " + taTeam.getName() + " as ADMIN to repository: " + studentRepo.getName()));
             logger.severe("Could not add TA Team: " + taTeam.getName() + " as admins to repository: " + studentRepo.getName());
+            e.printStackTrace();
         }
     }
 
@@ -269,7 +269,6 @@ public class GithubManager {
             protectionBuilder.enable();
             logger.fine("Protected master branch of repository: " + repo.getName());
         } catch (IOException e) {
-            InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not protect master branch of repository: " + repo.getName()));
             logger.severe("Could not protect master branch of repository: " + repo.getName());
             e.printStackTrace();
         }
@@ -285,8 +284,7 @@ public class GithubManager {
             repo.createRef("refs/heads/development", sha1);
             logger.fine("Created development branch of repository: " + repo.getName());
         } catch (IOException e) {
-            InitializerApp.organization.addError(new Error(Severity.HIGH, "Could not create development branch of repository: " + repo.getName()));
-            logger.severe("Could not create development branch for repository: " + repo.getName() + '\n' + e.getMessage());
+            logger.severe("Could not create development branch for repository: " + repo.getName());
             e.printStackTrace();
         }
     }
@@ -314,8 +312,7 @@ public class GithubManager {
             logger.fine("Created repository: " + repo.getName());
             return repo;
         } catch (IOException e) {
-            logger.severe("Could not create repository: " + name + '\n' + e.getMessage());
-            InitializerApp.organization.addError(new Error(Severity.CRITICAL, "Could not create repository: " + name));
+            logger.severe("Could not create repository: " + name);
             e.printStackTrace();
             return null;
         }

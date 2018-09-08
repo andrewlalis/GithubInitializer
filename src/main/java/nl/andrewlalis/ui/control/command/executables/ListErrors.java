@@ -12,6 +12,11 @@ import java.util.logging.Logger;
 public class ListErrors implements Executable {
 
     /**
+     * A reference to the current application.
+     */
+    private InitializerApp app;
+
+    /**
      * The logger for outputting debug info.
      */
     private static final Logger logger = Logger.getLogger(ListErrors.class.getName());
@@ -19,13 +24,17 @@ public class ListErrors implements Executable {
         logger.setParent(Logger.getGlobal());
     }
 
+    public ListErrors(InitializerApp app) {
+        this.app = app;
+    }
+
     @Override
     public boolean execute(String[] args) {
         StringBuilder sb = new StringBuilder("Runtime Errors:\n");
-        if (InitializerApp.organization.getErrors().isEmpty()) {
+        if (this.app.getOrganization().getErrors().isEmpty()) {
             sb.append("None");
         }
-        for (Error error : InitializerApp.organization.getErrors()) {
+        for (Error error : this.app.getOrganization().getErrors()) {
             sb.append(error).append('\n');
         }
         logger.info(sb.toString());

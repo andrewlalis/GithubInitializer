@@ -1,9 +1,5 @@
 package nl.andrewlalis.model;
 
-import nl.andrewlalis.model.error.Error;
-import nl.andrewlalis.model.error.Severity;
-import nl.andrewlalis.ui.view.InitializerApp;
-
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -49,12 +45,7 @@ public class Student extends Person {
     public StudentTeam getPreferredTeam(Map<Integer, Student> studentMap) {
         StudentTeam t = new StudentTeam();
         for (int partnerNumber : this.getPreferredPartners()) {
-            if (!studentMap.containsKey(partnerNumber)) {
-                InitializerApp.organization.addError(new Error(Severity.MEDIUM, "Student " + this.getNumber() + " has non-existent preferred partner with id: " + partnerNumber));
-                logger.warning("Student has non-existent partner id: " + partnerNumber + '\n' + this);
-            } else {
-                t.addMember(studentMap.get(partnerNumber));
-            }
+            t.addMember(studentMap.get(partnerNumber));
         }
         t.addMember(this);
         return t;

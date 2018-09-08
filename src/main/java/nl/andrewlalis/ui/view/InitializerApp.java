@@ -42,7 +42,7 @@ public class InitializerApp extends JFrame {
     /**
      * The organization object, which contains all important state information.
      */
-    public static Organization organization;
+    private Organization organization;
 
     /**
      * Constructs a new instance of the main application frame, with both an executor, and organization model.
@@ -52,6 +52,7 @@ public class InitializerApp extends JFrame {
      */
     public InitializerApp(CommandExecutor executor) {
         this.executor = executor;
+        this.organization = new Organization();
 
         // UI initialization.
         ImageIcon icon = new ImageIcon(getClass().getResource("/image/icon.png"));
@@ -219,6 +220,10 @@ public class InitializerApp extends JFrame {
      */
     public String getAccessToken() {
         return this.accessTokenField.getText().trim();
+    }
+
+    public Organization getOrganization() {
+        return this.organization;
     }
 
     public void setAccessToken(String accessToken) {

@@ -48,7 +48,7 @@ public class DelegateStudentTeamsDialog extends JDialog {
         super(parentApp, "Delegate Student Teams", true);
         this.manager = manager;
         this.teamSpinners = new ArrayList<>();
-        this.totalStudentTeamsCount = InitializerApp.organization.getStudentTeams().size();
+        this.totalStudentTeamsCount = parentApp.getOrganization().getStudentTeams().size();
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         this.initUI();

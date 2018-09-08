@@ -17,6 +17,15 @@ import java.util.List;
  */
 public class ReadStudentsFile implements Executable {
 
+    /**
+     * A reference to the current application, which contains the model for storing information.
+     */
+    private InitializerApp app;
+
+    public ReadStudentsFile(InitializerApp app) {
+        this.app = app;
+    }
+
     @Override
     public boolean execute(String[] args) {
         if (args.length < 2) {
@@ -28,7 +37,7 @@ public class ReadStudentsFile implements Executable {
         if (teams == null) {
             return false;
         }
-        InitializerApp.organization.setStudentTeams(teams);
+        this.app.getOrganization().setStudentTeams(teams);
         return true;
     }
 }
