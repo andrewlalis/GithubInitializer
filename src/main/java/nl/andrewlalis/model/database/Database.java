@@ -82,7 +82,7 @@ public class Database {
      * @param personType The type of person to store, using a constant defined above.
      * @return True if successful, false otherwise.
      */
-    private boolean storePerson(Person person, int personType) {
+    public boolean insertPerson(Person person, int personType) {
         try {
             logger.finest("Storing person: " + person);
             String sql = "INSERT INTO persons (id, name, email_address, github_username, person_type_id) VALUES (?, ?, ?, ?, ?);";
@@ -92,8 +92,7 @@ public class Database {
             stmt.setString(3, person.getEmailAddress());
             stmt.setString(4, person.getGithubUsername());
             stmt.setInt(5, personType);
-            stmt.execute();
-            return true;
+            return stmt.execute();
         } catch (SQLException e) {
             logger.severe("SQLException while inserting Person: " + person + '\n' + e.getMessage());
             return false;
@@ -101,104 +100,23 @@ public class Database {
     }
 
     /**
-     * Stores a teaching assistant without a team.
-     * @param ta The teaching assistant to store.
-     * @return True if successful, false otherwise.
-     */
-    public boolean storeTeachingAssistant(TeachingAssistant ta) {
-        return this.storeTeachingAssistant(ta, TEAM_NONE);
-    }
-
-    /**
-     * Stores a teaching assistant in the database.
-     * @param ta The teaching assistant to store.
-     * @param teamId The teaching assistant's team id.
-     * @return True if successful, false otherwise.
-     */
-    public boolean storeTeachingAssistant(TeachingAssistant ta, int teamId) {
-        if (!storePerson(ta, PERSON_TYPE_TA)) {
-            return false;
-        }
-        try {
-            String sql = "INSERT INTO teaching_assistants (person_id, team_id) VALUES (?, ?);";
-            PreparedStatement stmt = this.connection.prepareStatement(sql);
-            stmt.setInt(1, ta.getNumber());
-            stmt.setInt(2, teamId);
-            stmt.execute();
-            return true;
-        } catch (SQLException e) {
-            logger.severe("SQL Exception while inserting TeachingAssistant.\n" + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Stores a team in the database.
-     * @param team The team to store.
-     * @param type The type of team that this is.
-     * @return True if successful, false otherwise.
-     */
-    public boolean storeTeam(Team team, int type) {
-        try {
-            String sql = "INSERT INTO teams (id, team_type_id) VALUES (?, ?);";
-            PreparedStatement stmt = this.connection.prepareStatement(sql);
-            stmt.setInt(1, team.getId());
-            stmt.setInt(2, type);
-            stmt.execute();
-            return true;
-        } catch (SQLException e) {
-            logger.severe("SQLException while inserting team: " + team + '\n' + e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Stores a list of student teams in the database.
-     * @param teams The list of teams to store.
-     * @return True if successful, or false if an error occurred.
-     */
-    public boolean storeStudentTeams(List<StudentTeam> teams) {
-        for (StudentTeam team : teams) {
-            if (!this.storeTeam(team, TEAM_TYPE_STUDENT)) {
-                return false;
-            }
-            for (Student student : team.getStudents()) {
-                if (!this.storeStudent(student, team.getId())) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Stores a student without a team.
-     * @param student The student to store.
-     * @return True if successful, false otherwise.
-     */
-    public boolean storeStudent(Student student) {
-        return this.storeStudent(student, TEAM_NONE);
-    }
-
-    /**
      * Stores a student in the database.
      * @param student The student to store.
-     * @param teamId The team id for the team the student is in.
      * @return True if the operation was successful, false otherwise.
      */
-    public boolean storeStudent(Student student, int teamId) {
+    public boolean insertStudent(Student student) {
         logger.finest("Storing student: " + student);
-        if (!storePerson(student, PERSON_TYPE_STUDENT)) {
+        if (!insertPerson(student, PERSON_TYPE_STUDENT)) {
             return false;
         }
         try {
-            String sql = "INSERT INTO students (person_id, team_id, chose_partner) VALUES (?, ?, ?);";
+            String sql = "INSERT INTO students (person_id, chose_partner) VALUES (?, ?);";
             PreparedStatement stmt = this.connection.prepareStatement(sql);
             stmt.setInt(1, student.getNumber());
-            stmt.setInt(2, teamId);
-            stmt.setInt(3, student.getPreferredPartners().size() > 0 ? 1 : 0);
-            stmt.execute();
+            stmt.setInt(2, student.getPreferredPartners().size() > 0 ? 1 : 0);
+            if (!stmt.execute()) {
+                return false;
+            }
             // Storing partners.
             String sqlPartner = "INSERT INTO student_preferred_partners (student_id, partner_id) VALUES (?, ?);";
             PreparedStatement stmtPartner = this.connection.prepareStatement(sqlPartner);
@@ -213,6 +131,93 @@ public class Database {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Stores a teaching assistant in the database.
+     * @param ta The teaching assistant to store.
+     * @return True if successful, false otherwise.
+     */
+    public boolean insertTeachingAssistant(TeachingAssistant ta) {
+        if (!insertPerson(ta, PERSON_TYPE_TA)) {
+            return false;
+        }
+        try {
+            String sql = "INSERT INTO teaching_assistants (person_id) VALUES (?);";
+            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            stmt.setInt(1, ta.getNumber());
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            logger.severe("SQL Exception while inserting TeachingAssistant.\n" + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Stores a team in the database, and any persons who do not yet exist.
+     * @param team The team to store.
+     * @param type The type of team that this is.
+     * @param personType The type of people that this team is made of.
+     * @return True if successful, false otherwise.
+     */
+    public boolean insertTeam(Team team, int type, int personType) {
+        try {
+            String sql = "INSERT INTO teams (id, team_type_id) VALUES (?, ?);";
+            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            stmt.setInt(1, team.getId());
+            stmt.setInt(2, type);
+            if (stmt.execute()) {
+                for (Person p : team.getMembers()) {
+                    this.insertPerson(p, personType);
+                    String sqlMembers = "INSERT INTO team_members (team_id, person_id) VALUES (?, ?);";
+                    PreparedStatement stmtMembers = this.connection.prepareStatement(sqlMembers);
+                    stmtMembers.setInt(1, team.getId());
+                    stmtMembers.setInt(2, p.getNumber());
+                    stmtMembers.execute();
+                }
+            }
+            return true;
+        } catch (SQLException e) {
+            logger.severe("SQLException while inserting team: " + team + '\n' + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Stores a student team in the database.
+     * @param team The team to store.
+     * @return True if successful, false otherwise.
+     */
+    public boolean insertStudentTeam(StudentTeam team) {
+        if (!this.insertTeam(team, TEAM_TYPE_STUDENT, PERSON_TYPE_STUDENT)) {
+            return false;
+        }
+        try {
+            String sql = "INSERT INTO student_teams (team_id, repository_name, teaching_assistant_team_id) VALUES (?, ?, ?);";
+            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            stmt.setInt(1, team.getId());
+            stmt.setString(2, (team.getRepository() == null) ? null : team.getRepository().getName());
+            stmt.setInt(3, (team.getTaTeam() == null) ? TEAM_NONE : team.getTaTeam().getId());
+            return stmt.execute();
+        } catch (SQLException e) {
+            logger.severe("SQLException while inserting student team: " + team + '\n' + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Stores a list of student teams in the database.
+     * @param teams The list of teams to store.
+     * @return True if successful, or false if an error occurred.
+     */
+    public boolean storeStudentTeams(List<StudentTeam> teams) {
+        for (StudentTeam team : teams) {
+            this.insertStudentTeam(team);
+        }
+        return true;
     }
 
     /**

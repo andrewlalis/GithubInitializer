@@ -22,7 +22,7 @@ public class GenerateAssignmentsRepoListener extends ExecutableListener {
             String description = JOptionPane.showInputDialog(this.app, "Enter a description for the repository.", "Repository Description", JOptionPane.QUESTION_MESSAGE);
             String teamName = JOptionPane.showInputDialog(this.app, "Enter the name of the TA team containing all teaching assistants.", "TA Team Name", JOptionPane.QUESTION_MESSAGE);
             if (teamName != null) {
-                this.executor.executeCommand("generateassignments", new String[]{
+                this.executor.executeCommand("generate_assignments", new String[]{
                         this.app.getOrganizationName(),
                         this.app.getAccessToken(),
                         repoName,

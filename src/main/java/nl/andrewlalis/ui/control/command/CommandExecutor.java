@@ -63,8 +63,10 @@ public class CommandExecutor {
      */
     public void executeCommand(String commandName, String[] args) {
         if (this.commands.containsKey(commandName)) {
-            logger.info(commandName + ' ' + Arrays.toString(args));
-            this.commands.get(commandName).execute(args);
+            logger.info("Command executed: " + commandName + ' ' + Arrays.toString(args));
+            if (!this.commands.get(commandName).execute(args)) {
+                logger.warning("Command did not execute successfully.");
+            }
         } else {
             logger.warning(commandName + " is not a valid command.");
         }

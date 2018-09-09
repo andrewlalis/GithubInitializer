@@ -1,15 +1,13 @@
 package nl.andrewlalis.ui.view;
 
+import nl.andrewlalis.model.Organization;
 import nl.andrewlalis.ui.control.OutputTextHandler;
 import nl.andrewlalis.ui.control.command.CommandExecutor;
-import nl.andrewlalis.ui.control.command.executables.ArchiveRepos;
-import nl.andrewlalis.ui.control.listeners.ArchiveAllListener;
-import nl.andrewlalis.ui.control.listeners.CommandFieldKeyListener;
-import nl.andrewlalis.ui.control.listeners.GenerateAssignmentsRepoListener;
-import nl.andrewlalis.ui.control.listeners.ReadStudentsFileListener;
+import nl.andrewlalis.ui.control.listeners.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,15 +34,31 @@ public class InitializerApp extends JFrame {
     private JTextField organizationField = new JTextField();
     private JTextField accessTokenField = new JTextField();
 
+    private JCheckBox privateCheckbox = new JCheckBox("Private");
+
     /**
      * The executor responsible for performing meaningful actions.
      */
     private CommandExecutor executor;
 
+    /**
+     * The organization object, which contains all important state information.
+     */
+    private Organization organization;
+
+    /**
+     * Constructs a new instance of the main application frame, with both an executor, and organization model.
+     *
+     * @param executor The command executor, which is passed to any action listeners, so that buttons in this interface
+     *                 may execute commands in the same way that the command line can.
+     */
     public InitializerApp(CommandExecutor executor) {
         this.executor = executor;
+        this.organization = new Organization();
 
         // UI initialization.
+        ImageIcon icon = new ImageIcon(getClass().getResource("/image/icon.png"));
+        this.setIconImage(icon.getImage());
         this.initFrame();
     }
 
@@ -52,7 +66,6 @@ public class InitializerApp extends JFrame {
      * Begins showing the application
      */
     public void begin() {
-        this.pack();
         this.setVisible(true);
     }
 
@@ -81,6 +94,8 @@ public class InitializerApp extends JFrame {
         mainPanel.add(this.initGithubManagerPanel(), BorderLayout.EAST);
 
         this.setContentPane(mainPanel);
+        this.pack();
+        this.setLocationRelativeTo(null);
 
         this.initLoggingHandler();
     }
@@ -100,6 +115,8 @@ public class InitializerApp extends JFrame {
         this.organizationField.setText("InitializerTesting");
         infoInputPanel.add(generateTextFieldPanel("Access Token", this.accessTokenField));
         this.accessTokenField.setText("haha get your own");
+        infoInputPanel.add(this.privateCheckbox);
+        this.privateCheckbox.disable();
 
         githubManagerPanel.add(infoInputPanel, BorderLayout.NORTH);
 
@@ -107,22 +124,23 @@ public class InitializerApp extends JFrame {
         JPanel commonActionsPanel = new JPanel();
         commonActionsPanel.setLayout(new BoxLayout(commonActionsPanel, BoxLayout.PAGE_AXIS));
 
-        JButton archiveAllButton = new JButton("Archive All");
-        archiveAllButton.addActionListener(new ArchiveAllListener(this.executor, this));
-        commonActionsPanel.add(archiveAllButton);
+        commonActionsPanel.add(this.generateButtonPanel("Archive All", new ArchiveAllListener(this.executor, this)));
+        commonActionsPanel.add(this.generateButtonPanel("Read Students File", new ReadStudentsFileListener(this.executor, this)));
+        commonActionsPanel.add(this.generateButtonPanel("Delegate Student Teams", new DelegateStudentTeamsListener(this.executor, this)));
+        commonActionsPanel.add(this.generateButtonPanel("Generate Assignments Repo", new GenerateAssignmentsRepoListener(this.executor, this)));
 
-        JButton generateStudentTeamsButton = new JButton("Read teams from file");
-        generateStudentTeamsButton.addActionListener(new ReadStudentsFileListener(this.executor, this));
-        commonActionsPanel.add(generateStudentTeamsButton);
+        // TODO: Enable this once the define teams dialog is complete.
+//        JButton defineTaTeamsButton = new JButton("Define TA Teams");
+//        defineTaTeamsButton.addActionListener(new DefineTaTeamsListener(this.executor, this));
+//        commonActionsPanel.add(f);
 
-        JButton generateAssignmentsRepoButton = new JButton("Generate Assignments Repo");
-        generateAssignmentsRepoButton.addActionListener(new GenerateAssignmentsRepoListener(this.executor, this));
-        commonActionsPanel.add(generateAssignmentsRepoButton);
+        commonActionsPanel.add(this.generateButtonPanel("Delete Repos", new DeleteReposListener(this.executor, this)));
 
-        JButton defineTaTeamsButton = new JButton("Define TA Teams");
-        commonActionsPanel.add(defineTaTeamsButton);
+        // Extra panel to push buttons to the top.
+        JPanel buttonAlignmentPanel = new JPanel(new BorderLayout());
+        buttonAlignmentPanel.add(commonActionsPanel, BorderLayout.NORTH);
 
-        githubManagerPanel.add(commonActionsPanel, BorderLayout.CENTER);
+        githubManagerPanel.add(buttonAlignmentPanel, BorderLayout.CENTER);
 
         return githubManagerPanel;
     }
@@ -179,6 +197,20 @@ public class InitializerApp extends JFrame {
     }
 
     /**
+     * Generates a button with an attached action listener.
+     * @param buttonText The text to display on the button.
+     * @param listener The listener to attach to the button.
+     * @return A BorderLayout JPanel which contains the button in the CENTER location.
+     */
+    private JPanel generateButtonPanel(String buttonText, ActionListener listener) {
+        JPanel panel = new JPanel(new BorderLayout());
+        JButton button = new JButton(buttonText);
+        button.addActionListener(listener);
+        panel.add(button, BorderLayout.CENTER);
+        return panel;
+    }
+
+    /**
      * Gets the organization name entered in the relevant field.
      * @return The organization name the user has entered.
      */
@@ -192,6 +224,22 @@ public class InitializerApp extends JFrame {
      */
     public String getAccessToken() {
         return this.accessTokenField.getText().trim();
+    }
+
+    /**
+     * Gets whether or not the 'private' checkbox is selected.
+     * @return True if the user wishes for repositories to be made private, or false otherwise.
+     */
+    public boolean isPrivateChecked() {
+        return this.privateCheckbox.isSelected();
+    }
+
+    public Organization getOrganization() {
+        return this.organization;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessTokenField.setText(accessToken);
     }
 
 }
