@@ -26,11 +26,6 @@ import java.util.logging.Logger;
 public class GithubManager {
 
     /**
-     * The assignments repository where students will get assignments from.
-     */
-    private GHRepository assignmentsRepo;
-
-    /**
      * Github object for API interactions.
      */
     private GitHub github;
@@ -53,6 +48,22 @@ public class GithubManager {
         } catch (IOException e) {
             logger.severe("Unable to make a GithubManager with organization name: " + organizationName + " and access token: " + accessToken);
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Gets a repository by name.
+     * @param name The name of the repository.
+     * @return The repository with the given name, or null if none exists.
+     */
+    public GHRepository getRepository(String name) {
+        System.out.println(name);
+        try {
+            return this.organization.getRepository(name);
+        } catch (IOException e) {
+            logger.severe("No repository with name: " + name + " exists.");
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -112,17 +123,17 @@ public class GithubManager {
             logger.fine("Deleted pre-existing assignments repository.");
         }
 
-        this.assignmentsRepo = this.createRepository(assignmentsRepoName, team, description, false, true, true);
+        GHRepository assignmentsRepo = this.createRepository(assignmentsRepoName, team, description, false, true, true);
 
-        if (this.assignmentsRepo == null) {
+        if (assignmentsRepo == null) {
             logger.severe("Could not create assignments repository.");
             return;
         }
 
-        this.protectMasterBranch(this.assignmentsRepo, team);
+        this.protectMasterBranch(assignmentsRepo, team);
 
         // Grant all teaching assistants write access.
-        team.add(this.assignmentsRepo, GHOrganization.Permission.ADMIN);
+        team.add(assignmentsRepo, GHOrganization.Permission.ADMIN);
         logger.fine("Gave admin rights to all teaching assistants in team: " + team.getName());
     }
 
@@ -132,10 +143,11 @@ public class GithubManager {
      * @param team The student team to set up.
      * @param taTeam The team of teaching assistants that is responsible for these students.
      * @param prefix The prefix to append to the front of the repo name.
+     * @param assignmentsRepo The assignments repository.
      */
-    public void setupStudentRepo(StudentTeam team, TATeam taTeam, String prefix) {
+    public void setupStudentRepo(StudentTeam team, TATeam taTeam, String prefix, GHRepository assignmentsRepo) {
         // First check that the assignments repo exists, otherwise no invitations can be sent.
-        if (this.assignmentsRepo == null) {
+        if (assignmentsRepo == null) {
             logger.warning("Assignments repository must be created before student repositories.");
             return;
         }
@@ -147,13 +159,13 @@ public class GithubManager {
             return;
         }
 
+        team.setRepository(repo);
+        team.setTaTeam(taTeam);
+
         this.protectMasterBranch(repo, taTeam.getGithubTeam());
         this.createDevelopmentBranch(repo);
         this.addTATeamAsAdmin(repo, taTeam.getGithubTeam());
-        this.inviteStudentsToRepos(team, repo);
-
-        team.setRepository(repo);
-        team.setTaTeam(taTeam);
+        this.inviteStudentsToRepos(team, assignmentsRepo);
     }
 
     /**
@@ -216,22 +228,33 @@ public class GithubManager {
     /**
      * Invites students in a team to their repository, and the assignments repository.
      * @param team The team of students to invite as collaborators.
-     * @param repo The repository created for the students.
+     * @param assignmentsRepo The repository that contains assignments for the class.
      */
-    private void inviteStudentsToRepos(StudentTeam team, GHRepository repo) {
+    private void inviteStudentsToRepos(StudentTeam team, GHRepository assignmentsRepo) {
         try {
             logger.finest("Adding students from team: " + team.getId() + " as collaborators.");
-            List<GHUser> users = new ArrayList<>();
             for (Student student : team.getStudents()) {
                 GHUser user = this.github.getUser(student.getGithubUsername());
-                users.add(user);
-            }
 
-            repo.addCollaborators(users);
-            this.assignmentsRepo.addCollaborators(users);
+                this.addCollaboratorToRepo(user, assignmentsRepo);
+                this.addCollaboratorToRepo(user, team.getRepository());
+            }
         } catch (IOException e) {
             logger.severe("Could not add students as collaborators to assignments or their repo.\n" + team);
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Adds a user to a repository, or if a failure occurs, log the failure.
+     * @param user The user to add as a collaborator.
+     * @param repository The repository to add the user to.
+     */
+    private void addCollaboratorToRepo(GHUser user, GHRepository repository) {
+        try {
+            repository.addCollaborators(user);
+        } catch (IOException e) {
+            logger.severe("Could not add user " + user.getLogin() + " to repository " + repository.getName());
         }
     }
 
