@@ -1,8 +1,8 @@
 package nl.andrewlalis.ui.control.command;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import nl.andrewlalis.ui.control.command.executables.ExecutableContext;
+
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -23,8 +23,20 @@ public class CommandExecutor {
      */
     private Map<String, Executable> commands;
 
+    /**
+     * A list of all the executables which have failed to execute.
+     */
+    private List<ExecutableContext> failedExecutables;
+
+    /**
+     * A list of all executables which have been run successfully.
+     */
+    private List<ExecutableContext> successfulExecutables;
+
     public CommandExecutor() {
         this.commands = new HashMap<>();
+        this.failedExecutables = new ArrayList<>();
+        this.successfulExecutables = new ArrayList<>();
     }
 
     /**
@@ -64,12 +76,24 @@ public class CommandExecutor {
     public void executeCommand(String commandName, String[] args) {
         if (this.commands.containsKey(commandName)) {
             logger.info("Command executed: " + commandName + ' ' + Arrays.toString(args));
-            if (!this.commands.get(commandName).execute(args)) {
+            Executable executable = this.commands.get(commandName);
+            ExecutableContext context = new ExecutableContext(executable, args);
+            if (!executable.execute(args)) {
                 logger.warning("Command did not execute successfully.");
+                this.failedExecutables.add(context);
+            } else {
+                this.successfulExecutables.add(context);
             }
         } else {
             logger.warning(commandName + " is not a valid command.");
         }
+    }
+
+    /**
+     * Retries all failed executables, and if successful, removes them from the queue.
+     */
+    public void rerunFailedExecutables() {
+        this.failedExecutables.removeIf(ExecutableContext::runAgain);
     }
 
 }
