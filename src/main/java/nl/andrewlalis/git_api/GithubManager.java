@@ -52,6 +52,28 @@ public class GithubManager {
     }
 
     /**
+     * Returns a list of repositories with the given substring.
+     * @param substring A string which all repositories should contain.
+     * @return A List of repositories whose names contain the given substring.
+     */
+    public List<GHRepository> listReposWithPrefix(String substring) {
+        List<GHRepository> repos = new ArrayList<>();
+        try {
+            List<GHRepository> allRepos = this.organization.listRepositories().asList();
+            for (GHRepository repo : allRepos) {
+                if (repo.getName().contains(substring)) {
+                    repos.add(repo);
+                }
+            }
+        } catch (Exception e) {
+            logger.severe("IOException while listing repositories in the organization.");
+            e.printStackTrace();
+        }
+
+        return repos;
+    }
+
+    /**
      * Gets a repository by name.
      * @param name The name of the repository.
      * @return The repository with the given name, or null if none exists.
