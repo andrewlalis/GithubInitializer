@@ -1,30 +1,52 @@
 package nl.andrewlalis.model;
 
+import nl.andrewlalis.model.database.BaseEntity;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 /**
  * A generic object that students, teaching assistants, and professors can extend from. This covers all the basic
  * functionality that applies to anyone in the system.
  */
-public abstract class Person  {
+@Entity(name = "Person")
+@Table(name = "persons")
+public abstract class Person extends BaseEntity {
 
     /**
      * The unique identification number for this person. (P- or S-Number)
      */
+    @Column(name="number")
     protected int number;
 
     /**
      * The person's first and last name.
      */
+    @Column(name="name")
     protected String name;
 
     /**
      * The person's email address.
      */
+    @Column(name="email_address")
     protected String emailAddress;
 
     /**
      * The person's github username.
      */
+    @Column(name="github_username")
     protected String githubUsername;
+
+    /**
+     * Constructs an empty default Person.
+     */
+    public Person() {
+        this.number = -1;
+        this.name = null;
+        this.emailAddress = null;
+        this.githubUsername = null;
+    }
 
     /**
      * Constructs a Person from only a github username, which is, in some cases, enough to perform a lot of actions.
@@ -58,16 +80,32 @@ public abstract class Person  {
         return this.number;
     }
 
+    public void setNumber(int number) {
+        this.number = number;
+    }
+
     public String getName(){
         return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmailAddress(){
         return this.emailAddress;
     }
 
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
     public String getGithubUsername(){
         return this.githubUsername;
+    }
+
+    public void setGithubUsername(String githubUsername) {
+        this.githubUsername = githubUsername;
     }
 
     /**

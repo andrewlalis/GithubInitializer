@@ -2,9 +2,6 @@ package nl.andrewlalis.util;
 
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
-import nl.andrewlalis.model.error.Error;
-import nl.andrewlalis.model.error.Severity;
-import nl.andrewlalis.ui.view.InitializerApp;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
@@ -45,9 +42,9 @@ public class TeamGenerator {
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(new FileReader(filename));
 
         logger.fine("Reading all records into map.");
-        Map<Integer, Student> studentMap;
+        List<Student> students;
         try {
-            studentMap = readAllStudents(records, teamSize);
+            students = readAllStudents(records, teamSize);
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.severe("StudentTeam size does not match column count in records.");
             throw new IllegalArgumentException("StudentTeam size does not match column count in records.");
@@ -55,7 +52,7 @@ public class TeamGenerator {
 
 
         logger.fine("Generating all valid teams from student map.");
-        return generateAllValidTeams(studentMap, teamSize);
+        return generateAllValidTeams(students, teamSize);
     }
 
     /**
@@ -71,21 +68,23 @@ public class TeamGenerator {
      * After all students with preferred partners are placed in teams, the single students are merged, and their teams
      * are added afterwards.
      *
-     * @param studentMap A mapping for each student to their student number.
+     * @param students A list of students, each with a list of preferred partners.
      * @param teamSize The preferred maximum size for a team.
      * @return A list of teams, most of which are of teamSize size.
      */
-    private static List<StudentTeam> generateAllValidTeams(Map<Integer, Student> studentMap, int teamSize) {
-        List<Student> singleStudents = new ArrayList<>(studentMap.values());
+    private static List<StudentTeam> generateAllValidTeams(List<Student> students, int teamSize) {
+        List<Student> singleStudents = new ArrayList<>(students);
         List<StudentTeam> studentTeams = new ArrayList<>();
 
+        // An integer which increments for each valid team. Used to create identifiers for each team.
         int teamCount = 1;
+
         // For each student, try to make a team from its preferred partners.
-        for (Map.Entry<Integer, Student> e : studentMap.entrySet()) {
-            StudentTeam newTeam = e.getValue().getPreferredTeam(studentMap);
+        for (Student student : students) {
+            StudentTeam newTeam = student.getPreferredTeam();
             logger.finest("Checking if student's preferred team is valid:\n" + newTeam);
             // Check if the team is of a valid size, and is not a duplicate.
-            // Note that at this stage, singles are treated as studentTeams of 1, and thus not valid for any teamSize > 1.
+            // Note that at this stage, singles are treated as student teams of 1, and thus not valid for any team size > 1.
             if (newTeam.isValid(teamSize)) {
                 // We know that the team is valid on its own, so now we check if it has members identical to any team already created.
                 boolean matchFound = false;
@@ -97,7 +96,7 @@ public class TeamGenerator {
                 }
                 if (!matchFound) {
                     // Once we know this team is completely valid, we remove all the students in it from the list of singles.
-                    newTeam.setId(teamCount++);
+                    newTeam.setNumber(teamCount++);
                     singleStudents.removeAll(Arrays.asList(newTeam.getStudents()));
                     studentTeams.add(newTeam);
                     logger.fine("Created team:\n" + newTeam);
@@ -114,14 +113,14 @@ public class TeamGenerator {
      * size as possible.
      * @param singleStudents A list of students who have no preferred partners.
      * @param teamSize The preferred team size.
-     * @param teamIndex The current number used in assigning an id to the team.
+     * @param teamIndex The current number used in assigning an number to the team.
      * @return A list of teams comprising of single students.
      */
     private static List<StudentTeam> mergeSingleStudents(List<Student> singleStudents, int teamSize, int teamIndex) {
         List<StudentTeam> studentTeams = new ArrayList<>();
         while (!singleStudents.isEmpty()) {
             StudentTeam t = new StudentTeam();
-            t.setId(teamIndex++);
+            t.setNumber(teamIndex++);
             logger.fine("Creating new team of single students:\n" + t);
             while (t.memberCount() < teamSize && !singleStudents.isEmpty()) {
                 Student s = singleStudents.remove(0);
@@ -141,8 +140,10 @@ public class TeamGenerator {
      * @return A map of all students in the file.
      * @throws ArrayIndexOutOfBoundsException if the teamSize does not work with the columns in the record.
      */
-    private static Map<Integer, Student> readAllStudents(Iterable<CSVRecord> records, int teamSize) throws ArrayIndexOutOfBoundsException {
+    private static List<Student> readAllStudents(Iterable<CSVRecord> records, int teamSize) throws ArrayIndexOutOfBoundsException {
         Map<Integer, Student> studentMap = new HashMap<>();
+        Map<Student, List<Integer>> studentPreferredIds = new HashMap<>();
+        // Perform the initial read of the students.
         for (CSVRecord record : records) {
             logger.finest("Read record: " + record);
             List<Integer> preferredIds = new ArrayList<>();
@@ -152,21 +153,38 @@ public class TeamGenerator {
                     preferredIds.add(Integer.parseInt(record.get(columnOffset + i)));
                 }
             }
-            Student s = new Student(Integer.parseInt(record.get(3)), record.get(2), record.get(1), record.get(4), preferredIds);
+            Student s = new Student();
+            s.setNumber(Integer.parseInt(record.get(3)));
+            s.setName(record.get(2));
+            s.setEmailAddress(record.get(1));
+            s.setGithubUsername(record.get(4));
             if (studentMap.containsValue(s)) {
                 logger.warning("Duplicate entry found for student: " + s + "\nOverwriting previous value.");
             }
             studentMap.put(s.getNumber(), s);
+            studentPreferredIds.put(s, preferredIds);
         }
 
-        // Perform a safety check to ensure all preferred partners are valid students.
-        for (Map.Entry<Integer, Student> entry : studentMap.entrySet()) {
-            // Remove any ids that don't exist in the whole list of students.
-            entry.getValue().getPreferredPartners().removeIf(partnerId -> !studentMap.containsKey(partnerId));
+        // The final list of students, with preferred partners set.
+        List<Student> students = new ArrayList<>();
+
+        // Assign students to their preferred students.
+        for (Map.Entry<Student, List<Integer>> entry : studentPreferredIds.entrySet()) {
+            Student s = entry.getKey();
+            for (int partnerNumber : entry.getValue()) {
+                // Check that this preferred partner number exists.
+                if (studentMap.containsKey(partnerNumber)) {
+                    s.addPreferredPartner(studentMap.get(partnerNumber));
+                } else {
+                    logger.warning("Student " + s + " has invalid preferred partner.");
+                }
+            }
+            students.add(s);
         }
+
         // At this point, all students are valid, and all preferred partners are valid.
-        logger.fine("Read " + studentMap.size() + " students from records.");
-        return studentMap;
+        logger.fine("Read " + students.size() + " students from records.");
+        return students;
     }
 
 }

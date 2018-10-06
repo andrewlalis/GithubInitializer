@@ -177,7 +177,7 @@ public class GithubManager {
         GHRepository repo = this.createRepository(team.generateUniqueName(prefix), taTeam.getGithubTeam(), team.generateRepoDescription(), false, true, true);
 
         if (repo == null) {
-            logger.severe("Repository for student team " + team.getId() + " could not be created.");
+            logger.severe("Repository for student team " + team.getNumber() + " could not be created.");
             return;
         }
 
@@ -254,7 +254,7 @@ public class GithubManager {
      */
     private void inviteStudentsToRepos(StudentTeam team, GHRepository assignmentsRepo) {
         try {
-            logger.finest("Adding students from team: " + team.getId() + " as collaborators.");
+            logger.finest("Adding students from team: " + team.getNumber() + " as collaborators.");
             for (Student student : team.getStudents()) {
                 GHUser user = this.github.getUser(student.getGithubUsername());
 

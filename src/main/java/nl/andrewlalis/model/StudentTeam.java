@@ -2,21 +2,29 @@ package nl.andrewlalis.model;
 
 import org.kohsuke.github.GHRepository;
 
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Arrays;
 
 /**
  * Represents one or more students' collective information.
  */
-public class StudentTeam extends Team{
+@Entity(name = "StudentTeam")
+@Table(name = "student_teams")
+public class StudentTeam extends Team {
 
     /**
      * The repository belonging to this team.
      */
+    @Transient
     private GHRepository repository;
 
     /**
      * The TATeam responsible for this student team.
      */
+    @ManyToOne
     private TATeam taTeam;
 
     public StudentTeam() {
@@ -62,11 +70,11 @@ public class StudentTeam extends Team{
      * Generates a unique name which is intended to be used for the repository name of this team.
      * @param prefix A prefix to further reduce the chances of duplicate names.
      *               It is suggested to use something like "2018_OOP"
-     * @return A string comprised of the prefix, team id, and student number of each team member.
+     * @return A string comprised of the prefix, team number, and student number of each team member.
      */
     public String generateUniqueName(String prefix) {
         StringBuilder sb = new StringBuilder(prefix);
-        sb.append("_team_").append(this.id);
+        sb.append("_team_").append(this.number);
         for (Student s : this.getStudents()) {
             sb.append('_').append(s.getNumber());
         }
@@ -79,7 +87,7 @@ public class StudentTeam extends Team{
      */
     public String generateRepoDescription() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Group ").append(this.id).append(": ");
+        sb.append("Group ").append(this.number).append(": ");
         for (int i = 0; i < this.memberCount(); i++) {
             sb.append(this.getStudents()[i].getName());
             if (i != this.memberCount()-1) {
