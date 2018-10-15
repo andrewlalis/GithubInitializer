@@ -1,14 +1,12 @@
 package nl.andrewlalis;
 
-import nl.andrewlalis.model.Student;
-import nl.andrewlalis.model.database.DbUtil;
-import nl.andrewlalis.ui.control.command.CommandExecutor;
-import nl.andrewlalis.ui.control.command.executables.*;
+import nl.andrewlalis.command.CommandExecutor;
+import nl.andrewlalis.command.executables.*;
+import nl.andrewlalis.git_api.GithubManager;
 import nl.andrewlalis.ui.view.InitializerApp;
+import nl.andrewlalis.ui.view.StartView;
 import nl.andrewlalis.util.CommandLine;
 import nl.andrewlalis.util.Logging;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 
 import java.util.Map;
 import java.util.logging.Logger;
@@ -51,12 +49,15 @@ public class Main {
                 "© Andrew Lalis (2018), All rights reserved.\n" +
                 "Program initialized.");
 
-        SessionFactory factory = DbUtil.getSessionFactory();
-        Session session = factory.openSession();
-        session.beginTransaction();
-        System.out.println(session.save(new Student(1, "a", "a@e.com", "git", null)));
-        session.getTransaction().commit();
-        session.close();
+        GithubManager manager = new GithubManager();
+        StartView startView = new StartView(manager);
+
+//        SessionFactory factory = DbUtil.getSessionFactory();
+//        Session session = factory.openSession();
+//        session.beginTransaction();
+//        System.out.println(session.save(new Student(1, "a", "a@e.com", "git", null)));
+//        session.getTransaction().commit();
+//        session.close();
     }
 
 }

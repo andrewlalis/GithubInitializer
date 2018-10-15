@@ -1,6 +1,6 @@
-package nl.andrewlalis.ui.control.command.executables;
+package nl.andrewlalis.command.executables;
 
-import nl.andrewlalis.ui.control.command.Executable;
+import nl.andrewlalis.command.Executable;
 
 /**
  * An object to record a specific executable's execution context (args given), with the ability to re-run the executable

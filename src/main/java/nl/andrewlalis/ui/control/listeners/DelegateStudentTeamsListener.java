@@ -1,6 +1,6 @@
 package nl.andrewlalis.ui.control.listeners;
 
-import nl.andrewlalis.ui.control.command.CommandExecutor;
+import nl.andrewlalis.command.CommandExecutor;
 import nl.andrewlalis.ui.view.InitializerApp;
 
 import java.awt.event.ActionEvent;

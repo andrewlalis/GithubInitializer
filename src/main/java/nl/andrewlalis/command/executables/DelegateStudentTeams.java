@@ -1,4 +1,4 @@
-package nl.andrewlalis.ui.control.command.executables;
+package nl.andrewlalis.command.executables;
 
 import nl.andrewlalis.git_api.GithubManager;
 import nl.andrewlalis.model.StudentTeam;

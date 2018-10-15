@@ -1,8 +1,8 @@
 package nl.andrewlalis.ui.view;
 
+import nl.andrewlalis.command.CommandExecutor;
 import nl.andrewlalis.model.Organization;
 import nl.andrewlalis.ui.control.OutputTextHandler;
-import nl.andrewlalis.ui.control.command.CommandExecutor;
 import nl.andrewlalis.ui.control.listeners.*;
 
 import javax.swing.*;
@@ -128,11 +128,6 @@ public class InitializerApp extends JFrame {
         commonActionsPanel.add(this.generateButtonPanel("Read Students File", new ReadStudentsFileListener(this.executor, this)));
         commonActionsPanel.add(this.generateButtonPanel("Delegate Student Teams", new DelegateStudentTeamsListener(this.executor, this)));
         commonActionsPanel.add(this.generateButtonPanel("Generate Assignments Repo", new GenerateAssignmentsRepoListener(this.executor, this)));
-
-        // TODO: Enable this once the define teams dialog is complete.
-//        JButton defineTaTeamsButton = new JButton("Define TA Teams");
-//        defineTaTeamsButton.addActionListener(new DefineTaTeamsListener(this.executor, this));
-//        commonActionsPanel.add(f);
 
         commonActionsPanel.add(this.generateButtonPanel("Delete Repos", new DeleteReposListener(this.executor, this)));
 

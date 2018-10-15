@@ -1,6 +1,6 @@
-package nl.andrewlalis.ui.control.command;
+package nl.andrewlalis.command;
 
-import nl.andrewlalis.ui.control.command.executables.ExecutableContext;
+import nl.andrewlalis.command.executables.ExecutableContext;
 
 import java.util.*;
 import java.util.logging.Logger;
