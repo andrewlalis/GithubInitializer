@@ -44,6 +44,7 @@ public class CreateAssignmentsView extends AbstractView {
         JButton nextButton = new JButton("Next");
         InputStudentsFileView inputStudentsFileView = new InputStudentsFileView(this.getGithubManager());
         this.addChildView(inputStudentsFileView);
+        inputStudentsFileView.addParentView(this);
         nextButton.addActionListener(new NextListener(this, inputStudentsFileView));
         contentPane.add(nextButton, BorderLayout.SOUTH);
 

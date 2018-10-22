@@ -1,6 +1,8 @@
 package nl.andrewlalis.ui.view;
 
+import nl.andrewlalis.Main;
 import nl.andrewlalis.git_api.GithubManager;
+import nl.andrewlalis.ui.control.listeners.input_students_file_view.DoneListener;
 import nl.andrewlalis.ui.control.listeners.input_students_file_view.FileSelectListener;
 
 import javax.swing.*;
@@ -34,7 +36,7 @@ public class InputStudentsFileView extends AbstractView {
 
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.PAGE_AXIS));
-
+        // Button to select a file.
         JButton selectFileButton = new JButton("Select File");
         this.studentsPerTeamField = new JTextField("2");
         inputPanel.add(this.generateTextFieldPanel("How many students per team?", this.studentsPerTeamField));
@@ -43,7 +45,10 @@ public class InputStudentsFileView extends AbstractView {
 
         contentPane.add(inputPanel, BorderLayout.CENTER);
 
+        // Button to confirm and move to the next view.
         JButton doneButton = new JButton("Done");
+        Main.getManagementView().addParentView(this);
+        doneButton.addActionListener(new DoneListener(this, Main.getManagementView()));
         contentPane.add(doneButton, BorderLayout.SOUTH);
 
         return contentPane;

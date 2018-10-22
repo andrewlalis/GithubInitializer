@@ -29,6 +29,13 @@ public class Student extends Person {
     private List<Student> preferredPartners;
 
     /**
+     * The team that this student is assigned to.
+     */
+    @ManyToOne
+    @JoinColumn(name = "team_id")
+    private StudentTeam team;
+
+    /**
      * Constructs an empty student object.
      */
     public Student() {
@@ -72,5 +79,20 @@ public class Student extends Person {
         }
         t.addMember(this);
         return t;
+    }
+
+    /**
+     * Assigns this student to the given team, from the student's perspective.
+     * @param team The team to set as the assigned team.
+     */
+    public void assignToTeam(StudentTeam team) {
+        this.team = team;
+    }
+
+    /**
+     * @return The team that this student is assigned to. May return null if the student is unassigned.
+     */
+    public StudentTeam getAssignedTeam() {
+        return this.team;
     }
 }

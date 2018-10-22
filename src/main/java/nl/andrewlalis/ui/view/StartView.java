@@ -1,6 +1,8 @@
 package nl.andrewlalis.ui.view;
 
+import nl.andrewlalis.Main;
 import nl.andrewlalis.git_api.GithubManager;
+import nl.andrewlalis.ui.control.listeners.ViewChangeListener;
 import nl.andrewlalis.ui.control.listeners.start_view.CreateAssignmentsRepoListener;
 
 import javax.swing.*;
@@ -61,11 +63,18 @@ public class StartView extends AbstractView {
         infoInputPanel.add(this.generateTextFieldPanel("Access token:", this.accessTokenField));
 
         JPanel buttonsPanel = new JPanel();
+        // Create the button for going to the Create assignments repository view.
         JButton assignmentsViewButton = new JButton("Start New Course");
         CreateAssignmentsView assignmentsView = new CreateAssignmentsView(this.getGithubManager());
         this.addChildView(assignmentsView);
+        assignmentsView.addParentView(this);
         assignmentsViewButton.addActionListener(new CreateAssignmentsRepoListener(this, assignmentsView));
+
+        // Create the button for going straight to the management view.
         JButton managementViewButton = new JButton("Manage Existing Course");
+        this.addChildView(Main.getManagementView());
+        Main.getManagementView().addParentView(this);
+        managementViewButton.addActionListener(new ViewChangeListener(this, Main.getManagementView()));
 
         buttonsPanel.add(assignmentsViewButton);
         buttonsPanel.add(managementViewButton);

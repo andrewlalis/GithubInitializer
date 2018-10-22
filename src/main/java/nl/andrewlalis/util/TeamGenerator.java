@@ -98,7 +98,7 @@ public class TeamGenerator {
                     // Once we know this team is completely valid, we remove all the students in it from the list of singles.
                     newTeam.setNumber(teamCount++);
                     singleStudents.removeAll(Arrays.asList(newTeam.getStudents()));
-                    studentTeams.add(newTeam);
+                    assignStudentsToTeam(newTeam);
                     logger.fine("Created team:\n" + newTeam);
                 }
             }
@@ -128,6 +128,7 @@ public class TeamGenerator {
                 t.addMember(s);
             }
             studentTeams.add(t);
+            assignStudentsToTeam(t);
             logger.fine("Created team:\n" + t);
         }
         return studentTeams;
@@ -185,6 +186,17 @@ public class TeamGenerator {
         // At this point, all students are valid, and all preferred partners are valid.
         logger.fine("Read " + students.size() + " students from records.");
         return students;
+    }
+
+    /**
+     * Assigns all students in the given team to that team, such that all students then have a reference to the team
+     * they are in.
+     * @param team The team to assign students for.
+     */
+    private static void assignStudentsToTeam(StudentTeam team) {
+        for (Student student : team.getStudents()) {
+            student.assignToTeam(team);
+        }
     }
 
 }

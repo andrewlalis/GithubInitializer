@@ -4,6 +4,7 @@ import nl.andrewlalis.command.CommandExecutor;
 import nl.andrewlalis.command.executables.*;
 import nl.andrewlalis.git_api.GithubManager;
 import nl.andrewlalis.ui.view.InitializerApp;
+import nl.andrewlalis.ui.view.ManagementView;
 import nl.andrewlalis.ui.view.StartView;
 import nl.andrewlalis.util.CommandLine;
 import nl.andrewlalis.util.Logging;
@@ -17,6 +18,11 @@ import java.util.logging.Logger;
 public class Main {
 
     private static final Logger logger = Logger.getGlobal();
+
+    /**
+     * The main application's view, which should be able to be referenced in many places.
+     */
+    private static ManagementView managementView;
 
     public static void main(String[] args) {
 
@@ -50,7 +56,7 @@ public class Main {
                 "Program initialized.");
 
         GithubManager manager = new GithubManager();
-        StartView startView = new StartView(manager, "InitializerTesting", userOptions.get("token"));
+        managementView = new ManagementView(manager);
 
 //        SessionFactory factory = DbUtil.getSessionFactory();
 //        Session session = factory.openSession();
@@ -58,6 +64,15 @@ public class Main {
 //        System.out.println(session.save(new Student(1, "a", "a@e.com", "git", null)));
 //        session.getTransaction().commit();
 //        session.close();
+
+        StartView startView = new StartView(manager, "InitializerTesting", userOptions.get("token"));
+    }
+
+    /**
+     * @return The management view used for the application.
+     */
+    public static ManagementView getManagementView() {
+        return managementView;
     }
 
 }

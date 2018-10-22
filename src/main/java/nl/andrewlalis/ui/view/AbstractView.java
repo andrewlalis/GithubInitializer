@@ -24,17 +24,24 @@ public abstract class AbstractView extends JFrame {
     private List<AbstractView> childViews;
 
     /**
+     * A list of views which lead to this one.
+     */
+    private List<AbstractView> parentViews;
+
+    /**
      * Initializes the view by packing the content pane as it is defined by any child, and setting some generic swing
      * values.
      * @param title The window's title.
      * @param startVisible Whether or not to start the view as visible.
      * @param defaultCloseOperation What to do when the user closes the window.
      * @param preferredSize The preferred size of the view.
+     * @param githubManager The manager used for this view.
      */
     AbstractView(String title, boolean startVisible, int defaultCloseOperation, Dimension preferredSize, GithubManager githubManager) {
         super(title);
         this.githubManager = githubManager;
         this.childViews = new ArrayList<>();
+        this.parentViews = new ArrayList<>();
         this.setContentPane(this.buildContentPane());
         this.setDefaultCloseOperation(defaultCloseOperation);
         if (preferredSize != null) {
@@ -94,5 +101,34 @@ public abstract class AbstractView extends JFrame {
      */
     protected final void addChildView(AbstractView view) {
         this.childViews.add(view);
+    }
+
+    /**
+     * @return The list of children of this view.
+     */
+    protected final List<AbstractView> getChildViews() {
+        return this.childViews;
+    }
+
+    /**
+     * Adds a view as linked to this one as a parent.
+     * @param view The parent view.
+     */
+    protected final void addParentView(AbstractView view) {
+        this.parentViews.add(view);
+    }
+
+    /**
+     * @return The list of parents of this view.
+     */
+    protected final List<AbstractView> getParentViews() {
+        return this.parentViews;
+    }
+
+    /**
+     * Removes all parents registered to this view.
+     */
+    protected final void removeParents() {
+        this.parentViews.clear();
     }
 }
