@@ -1,13 +1,10 @@
 package nl.andrewlalis.ui.control.listeners.input_students_file_view;
 
 import nl.andrewlalis.Main;
-import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
-import nl.andrewlalis.model.database.DbUtil;
+import nl.andrewlalis.model.database.DbHelper;
 import nl.andrewlalis.ui.view.InputStudentsFileView;
 import nl.andrewlalis.util.TeamGenerator;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -42,10 +39,7 @@ public class FileSelectListener implements ActionListener {
         chooser.addChoosableFileFilter(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                if (file.isDirectory()) {
-                    return true;
-                }
-                return file.getName().toLowerCase().endsWith(".csv");
+                return file.isDirectory() || file.getName().toLowerCase().endsWith(".csv");
             }
 
             @Override
@@ -59,19 +53,7 @@ public class FileSelectListener implements ActionListener {
             int teamSize = this.fileView.getStudentsPerTeam();
             try {
                 List<StudentTeam> teams = TeamGenerator.generateFromCSV(chooser.getSelectedFile().getAbsolutePath(), teamSize);
-                Session session = DbUtil.getSessionFactory().openSession();
-                Transaction tx = session.beginTransaction();
-
-                for (StudentTeam team : teams) {
-                    for (Student s : team.getStudents()) {
-                        session.save(s);
-                    }
-                    session.save(team);
-                }
-
-                tx.commit();
-                session.close();
-
+                DbHelper.saveStudentTeams(teams);
                 Main.getManagementView().updateModels();
             } catch (IOException e) {
                 e.printStackTrace();

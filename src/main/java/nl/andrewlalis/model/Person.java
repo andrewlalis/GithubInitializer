@@ -1,10 +1,14 @@
 package nl.andrewlalis.model;
 
 import nl.andrewlalis.model.database.BaseEntity;
+import nl.andrewlalis.ui.view.components.Detailable;
+import nl.andrewlalis.util.Pair;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A generic object that students, teaching assistants, and professors can extend from. This covers all the basic
@@ -12,7 +16,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "Person")
 @Table(name = "persons")
-public abstract class Person extends BaseEntity {
+public abstract class Person extends BaseEntity implements Detailable {
 
     /**
      * The unique identification number for this person. (P- or S-Number)
@@ -137,5 +141,25 @@ public abstract class Person extends BaseEntity {
     @Override
     public String toString() {
         return this.getName() + ", " + this.getNumber() + ", " + this.getEmailAddress() + ", " + this.getGithubUsername();
+    }
+
+    @Override
+    public String getDetailName() {
+        return this.getName() + ", " + this.getNumber();
+    }
+
+    @Override
+    public String getDetailDescription() {
+        return null;
+    }
+
+    @Override
+    public List<Pair<String, String>> getDetailPairs() {
+        List<Pair<String, String>> pairs = new ArrayList<>();
+        pairs.add(new Pair<>("Name", this.getName()));
+        pairs.add(new Pair<>("Number", String.valueOf(this.getNumber())));
+        pairs.add(new Pair<>("Email Address", this.getEmailAddress()));
+        pairs.add(new Pair<>("Github Username", this.getGithubUsername()));
+        return pairs;
     }
 }

@@ -37,6 +37,15 @@ public class StudentTableModel extends AbstractTableModel {
         this.fireTableDataChanged();
     }
 
+    /**
+     * Gets the student in a particular row.
+     * @param row The row of the table.
+     * @return The student object at the specified row, or null if none is found.
+     */
+    public Student getStudentAt(int row) {
+        return this.studentsList.get(row);
+    }
+
     @Override
     public int getRowCount() {
         return studentsList.size();
@@ -54,7 +63,7 @@ public class StudentTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int row, int col) {
-        Student student = studentsList.get(row);
+        Student student = this.getStudentAt(row);
 
         switch(col) {
             case 0:

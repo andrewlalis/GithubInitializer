@@ -3,12 +3,17 @@ package nl.andrewlalis;
 import nl.andrewlalis.command.CommandExecutor;
 import nl.andrewlalis.command.executables.*;
 import nl.andrewlalis.git_api.GithubManager;
+import nl.andrewlalis.model.StudentTeam;
+import nl.andrewlalis.model.database.DbHelper;
 import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.ui.view.ManagementView;
 import nl.andrewlalis.ui.view.StartView;
 import nl.andrewlalis.util.CommandLine;
 import nl.andrewlalis.util.Logging;
+import nl.andrewlalis.util.TeamGenerator;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -32,6 +37,41 @@ public class Main {
         // Initialize logger.
         Logging.setup();
 
+        //startOldVersion(userOptions);
+
+        logger.info("GithubManager for Github Repositories in Educational Organizations.\n" +
+                "© Andrew Lalis (2018), All rights reserved.\n" +
+                "Program initialized.");
+
+        GithubManager manager = new GithubManager();
+        managementView = new ManagementView(manager);
+
+        initializeTestingData();
+        StartView startView = new StartView(manager, "InitializerTesting", userOptions.get("token"));
+    }
+
+    /**
+     * @return The management view used for the application.
+     */
+    public static ManagementView getManagementView() {
+        return managementView;
+    }
+
+    private static void initializeTestingData() {
+        try {
+            List<StudentTeam> teams = TeamGenerator.generateFromCSV("/home/andrew/Documents/School/ta/GithubInitializer/sampleAOOP.csv", 2);
+            DbHelper.saveStudentTeams(teams);
+            managementView.updateModels();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Legacy code to run the old version of the application.
+     * @param userOptions The options the user has entered in the command line.
+     */
+    public static void startOldVersion(Map<String, String> userOptions) {
         // Command executor which will be used by all actions the user can do.
         CommandExecutor executor = new CommandExecutor();
 
@@ -50,29 +90,6 @@ public class Main {
         executor.registerCommand("delegate_student_teams", new DelegateStudentTeams(app));
         executor.registerCommand("setup_student_repos", new SetupStudentRepos(app));
         executor.registerCommand("list_repos", new ListRepos());
-
-        logger.info("GithubManager for Github Repositories in Educational Organizations.\n" +
-                "© Andrew Lalis (2018), All rights reserved.\n" +
-                "Program initialized.");
-
-        GithubManager manager = new GithubManager();
-        managementView = new ManagementView(manager);
-
-//        SessionFactory factory = DbUtil.getSessionFactory();
-//        Session session = factory.openSession();
-//        session.beginTransaction();
-//        System.out.println(session.save(new Student(1, "a", "a@e.com", "git", null)));
-//        session.getTransaction().commit();
-//        session.close();
-
-        StartView startView = new StartView(manager, "InitializerTesting", userOptions.get("token"));
-    }
-
-    /**
-     * @return The management view used for the application.
-     */
-    public static ManagementView getManagementView() {
-        return managementView;
     }
 
 }
