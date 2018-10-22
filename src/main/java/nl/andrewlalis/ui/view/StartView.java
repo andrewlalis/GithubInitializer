@@ -29,6 +29,18 @@ public class StartView extends AbstractView {
                 githubManager);
     }
 
+    /**
+     * Constructs the starting view, with pre-defined organization and access tokens.
+     * @param githubManager A reference to the github manager this application uses.
+     * @param organizationName The name of the organization.
+     * @param accessToken The access token from the user.
+     */
+    public StartView(GithubManager githubManager, String organizationName, String accessToken) {
+        this(githubManager);
+        this.organizationNameField.setText(organizationName);
+        this.accessTokenField.setText(accessToken);
+    }
+
     public String getOrganizationName() {
         return this.organizationNameField.getText();
     }
@@ -44,13 +56,15 @@ public class StartView extends AbstractView {
         JPanel infoInputPanel = new JPanel();
         infoInputPanel.setLayout(new BoxLayout(infoInputPanel, BoxLayout.PAGE_AXIS));
         this.organizationNameField = new JTextField();
-        infoInputPanel.add(this.generateTextFieldPanel("Organization name:", this.organizationNameField));
         this.accessTokenField = new JTextField();
+        infoInputPanel.add(this.generateTextFieldPanel("Organization name:", this.organizationNameField));
         infoInputPanel.add(this.generateTextFieldPanel("Access token:", this.accessTokenField));
 
         JPanel buttonsPanel = new JPanel();
         JButton assignmentsViewButton = new JButton("Start New Course");
-        assignmentsViewButton.addActionListener(new CreateAssignmentsRepoListener(this, new CreateAssignmentsView(this.getGithubManager())));
+        CreateAssignmentsView assignmentsView = new CreateAssignmentsView(this.getGithubManager());
+        this.addChildView(assignmentsView);
+        assignmentsViewButton.addActionListener(new CreateAssignmentsRepoListener(this, assignmentsView));
         JButton managementViewButton = new JButton("Manage Existing Course");
 
         buttonsPanel.add(assignmentsViewButton);

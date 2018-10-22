@@ -28,10 +28,19 @@ public class NextListener extends ViewChangeListener {
     protected boolean beforeChange() {
         CreateAssignmentsView assignmentsView = (CreateAssignmentsView) this.previousView;
         String repoName = assignmentsView.getRepositoryName();
+
+        // Check that the repository name is legitimate.
+        if (repoName.trim().length() == 0) {
+            JOptionPane.showMessageDialog(this.previousView, "Repository name is empty.", "Error", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        // Check if the repository already exists.
         GithubManager manager = assignmentsView.getGithubManager();
         if (manager.repoExists(repoName)) {
             return true;
         } else {
+            // If not, we have to create it here.
             int reply = JOptionPane.showConfirmDialog(
                     assignmentsView,
                     "The repository you gave does not exist.\nWould you like to create it?",
@@ -39,7 +48,8 @@ public class NextListener extends ViewChangeListener {
                     JOptionPane.YES_NO_OPTION);
             if (reply == JOptionPane.YES_OPTION) {
                 try {
-                    assignmentsView.getGithubManager().setupAssignmentsRepo(repoName, "", this.getTeachingAssistantsTeamName());
+                    String description = JOptionPane.showInputDialog(assignmentsView, "Enter a description for the repository.", "Assignments Repository Description", JOptionPane.QUESTION_MESSAGE);
+                    assignmentsView.getGithubManager().setupAssignmentsRepo(repoName, description, this.getTeachingAssistantsTeamName());
                     return true;
                 } catch (IOException e) {
                     //e.printStackTrace();
@@ -52,6 +62,7 @@ public class NextListener extends ViewChangeListener {
         }
     }
 
+    // TODO: Replace this with a selector for an existing team of teaching assistants. Or configure this afterwards.
     private String getTeachingAssistantsTeamName() {
         String name = JOptionPane.showInputDialog(this.previousView, "Please enter (exactly) the name of Github team\nthat contains all teaching assistants.", "Select TA Team", JOptionPane.QUESTION_MESSAGE);
         return name;

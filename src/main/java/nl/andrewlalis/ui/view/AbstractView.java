@@ -4,6 +4,8 @@ import nl.andrewlalis.git_api.GithubManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * All views in the application will extend from this view, as a means of simplifying and organizing how visual
@@ -17,6 +19,11 @@ public abstract class AbstractView extends JFrame {
     private GithubManager githubManager;
 
     /**
+     * A list of views which are linked to this one via buttons in the component pane.
+     */
+    private List<AbstractView> childViews;
+
+    /**
      * Initializes the view by packing the content pane as it is defined by any child, and setting some generic swing
      * values.
      * @param title The window's title.
@@ -27,6 +34,7 @@ public abstract class AbstractView extends JFrame {
     AbstractView(String title, boolean startVisible, int defaultCloseOperation, Dimension preferredSize, GithubManager githubManager) {
         super(title);
         this.githubManager = githubManager;
+        this.childViews = new ArrayList<>();
         this.setContentPane(this.buildContentPane());
         this.setDefaultCloseOperation(defaultCloseOperation);
         if (preferredSize != null) {
@@ -52,6 +60,16 @@ public abstract class AbstractView extends JFrame {
         // Child classes can define custom behavior here.
     }
 
+    /**
+     * Extends the default expose behaviour by recursively disposing all views which are linked to this one.
+     */
+    public void dispose() {
+        for (AbstractView view : this.childViews) {
+            view.dispose();
+        }
+        super.dispose();
+    }
+
     public GithubManager getGithubManager() {
         return githubManager;
     }
@@ -68,5 +86,13 @@ public abstract class AbstractView extends JFrame {
         newPanel.add(textField);
         newPanel.setBorder(BorderFactory.createEmptyBorder(5, 2, 5, 2));
         return newPanel;
+    }
+
+    /**
+     * Adds a view as linked to this one. That way, this view can be referenced elsewhere, even when hidden.
+     * @param view The view to link.
+     */
+    protected final void addChildView(AbstractView view) {
+        this.childViews.add(view);
     }
 }

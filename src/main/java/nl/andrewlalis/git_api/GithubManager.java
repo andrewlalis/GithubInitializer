@@ -429,7 +429,7 @@ public class GithubManager {
         builder.issues(hasIssues);
         builder.description(description);
         builder.gitignoreTemplate("Java");
-        builder.private_(isPrivate);
+        builder.private_(false); // TODO: Testing value of false. Production uses true.
         GHRepository repo = builder.create();
         logger.fine("Created repository: " + repo.getName());
         return repo;

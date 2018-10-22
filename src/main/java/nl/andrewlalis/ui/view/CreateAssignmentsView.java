@@ -31,13 +31,20 @@ public class CreateAssignmentsView extends AbstractView {
     @Override
     protected JPanel buildContentPane() {
         JPanel contentPane = new JPanel();
-
         contentPane.setLayout(new BorderLayout());
+
+        JPanel fieldPanel = new JPanel();
+        fieldPanel.setLayout(new BoxLayout(fieldPanel, BoxLayout.PAGE_AXIS));
+
         this.repositoryNameField = new JTextField();
-        contentPane.add(this.generateTextFieldPanel("Repository name:", this.repositoryNameField), BorderLayout.CENTER);
+        fieldPanel.add(this.generateTextFieldPanel("Assignments repository name:", this.repositoryNameField));
+        contentPane.add(fieldPanel, BorderLayout.CENTER);
+
 
         JButton nextButton = new JButton("Next");
-        nextButton.addActionListener(new NextListener(this, new InputStudentsFileView(this.getGithubManager())));
+        InputStudentsFileView inputStudentsFileView = new InputStudentsFileView(this.getGithubManager());
+        this.addChildView(inputStudentsFileView);
+        nextButton.addActionListener(new NextListener(this, inputStudentsFileView));
         contentPane.add(nextButton, BorderLayout.SOUTH);
 
         return contentPane;

@@ -50,7 +50,7 @@ public class Main {
                 "Program initialized.");
 
         GithubManager manager = new GithubManager();
-        StartView startView = new StartView(manager);
+        StartView startView = new StartView(manager, "InitializerTesting", userOptions.get("token"));
 
 //        SessionFactory factory = DbUtil.getSessionFactory();
 //        Session session = factory.openSession();
