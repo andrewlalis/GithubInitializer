@@ -54,7 +54,7 @@ public class StudentTeam extends Team {
                 // If the student doesn't have an preferred partners, then assume that this is valid.
                 if (!studentA.getPreferredPartners().isEmpty()) {
                     for (Student studentB : this.getStudents()) {
-                        if (!studentA.equals(studentB) && !studentA.getPreferredPartners().contains(studentB.getNumber())) {
+                        if (!studentA.equals(studentB) && !studentA.getPreferredPartners().contains(studentB)) {
                             return false;
                         }
                     }

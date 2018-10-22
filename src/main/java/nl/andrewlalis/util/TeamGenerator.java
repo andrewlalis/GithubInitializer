@@ -91,12 +91,14 @@ public class TeamGenerator {
                 for (StudentTeam team : studentTeams) {
                     if (newTeam.hasSameMembers(team)) {
                         matchFound = true;
+                        logger.finest("A team was found with the same members: " + team.getId());
                         break;
                     }
                 }
                 if (!matchFound) {
                     // Once we know this team is completely valid, we remove all the students in it from the list of singles.
                     newTeam.setNumber(teamCount++);
+                    studentTeams.add(newTeam);
                     singleStudents.removeAll(Arrays.asList(newTeam.getStudents()));
                     assignStudentsToTeam(newTeam);
                     logger.fine("Created team:\n" + newTeam);

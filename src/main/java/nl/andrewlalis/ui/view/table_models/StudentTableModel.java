@@ -43,7 +43,10 @@ public class StudentTableModel extends AbstractTableModel {
      * @return The student object at the specified row, or null if none is found.
      */
     public Student getStudentAt(int row) {
-        return this.studentsList.get(row);
+        if (row >= 0 && row < this.studentsList.size()) {
+            return this.studentsList.get(row);
+        }
+        return null;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package nl.andrewlalis.model;
 
+import nl.andrewlalis.util.Pair;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +22,7 @@ public class Student extends Person {
     /**
      * A list of partners that the student has said that they would like to be partners with.
      */
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "student_preferred_partners",
             joinColumns = { @JoinColumn(name = "student_id")},
@@ -94,5 +96,21 @@ public class Student extends Person {
      */
     public StudentTeam getAssignedTeam() {
         return this.team;
+    }
+
+    @Override
+    public List<Pair<String, String>> getDetailPairs() {
+        List<Pair<String, String>> pairs = super.getDetailPairs();
+        String teamNumber = "None";
+        if (this.getAssignedTeam() != null) {
+            teamNumber = String.valueOf(this.getAssignedTeam().getNumber());
+        }
+        pairs.add(new Pair<>("Team Number", teamNumber));
+
+        for (int i = 0; i < this.preferredPartners.size(); i++) {
+            pairs.add(new Pair<>("Preferred partner " + (i + 1), this.preferredPartners.get(i).getDetailName()));
+        }
+
+        return pairs;
     }
 }

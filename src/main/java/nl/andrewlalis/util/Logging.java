@@ -1,7 +1,10 @@
 package nl.andrewlalis.util;
 
 import java.io.IOException;
-import java.util.logging.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Responsible for creating logs to standard output and writing to files.
@@ -25,7 +28,7 @@ public class Logging {
             e.printStackTrace();
         }
 
-        logger.setLevel(Level.ALL);
+        logger.setLevel(Level.FINEST);
         Logger.getLogger("").setLevel(Level.OFF);
 
     }

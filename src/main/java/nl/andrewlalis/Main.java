@@ -60,6 +60,7 @@ public class Main {
     private static void initializeTestingData() {
         try {
             List<StudentTeam> teams = TeamGenerator.generateFromCSV("/home/andrew/Documents/School/ta/GithubInitializer/sampleAOOP.csv", 2);
+            System.out.println(teams);
             DbHelper.saveStudentTeams(teams);
             managementView.updateModels();
         } catch (IOException e) {
