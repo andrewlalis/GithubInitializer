@@ -1,22 +1,31 @@
 package nl.andrewlalis.model;
 
-import org.kohsuke.github.GHRepository;
+import nl.andrewlalis.util.Pair;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents one or more students' collective information.
  */
-public class StudentTeam extends Team{
+@Entity(name = "StudentTeam")
+@Table(name = "student_teams")
+public class StudentTeam extends Team {
 
     /**
      * The repository belonging to this team.
      */
-    private GHRepository repository;
+    @Column(name = "repository_name", unique = true)
+    private String repositoryName;
 
     /**
      * The TATeam responsible for this student team.
      */
+    @ManyToOne
     private TATeam taTeam;
 
     public StudentTeam() {
@@ -46,7 +55,7 @@ public class StudentTeam extends Team{
                 // If the student doesn't have an preferred partners, then assume that this is valid.
                 if (!studentA.getPreferredPartners().isEmpty()) {
                     for (Student studentB : this.getStudents()) {
-                        if (!studentA.equals(studentB) && !studentA.getPreferredPartners().contains(studentB.getNumber())) {
+                        if (!studentA.equals(studentB) && !studentA.getPreferredPartners().contains(studentB)) {
                             return false;
                         }
                     }
@@ -62,11 +71,11 @@ public class StudentTeam extends Team{
      * Generates a unique name which is intended to be used for the repository name of this team.
      * @param prefix A prefix to further reduce the chances of duplicate names.
      *               It is suggested to use something like "2018_OOP"
-     * @return A string comprised of the prefix, team id, and student number of each team member.
+     * @return A string comprised of the prefix, team number, and student number of each team member.
      */
     public String generateUniqueName(String prefix) {
         StringBuilder sb = new StringBuilder(prefix);
-        sb.append("_team_").append(this.id);
+        sb.append("_team_").append(this.number);
         for (Student s : this.getStudents()) {
             sb.append('_').append(s.getNumber());
         }
@@ -79,7 +88,7 @@ public class StudentTeam extends Team{
      */
     public String generateRepoDescription() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Group ").append(this.id).append(": ");
+        sb.append("Group ").append(this.number).append(": ");
         for (int i = 0; i < this.memberCount(); i++) {
             sb.append(this.getStudents()[i].getName());
             if (i != this.memberCount()-1) {
@@ -89,12 +98,12 @@ public class StudentTeam extends Team{
         return sb.toString();
     }
 
-    public GHRepository getRepository() {
-        return this.repository;
+    public String getRepositoryName() {
+        return this.repositoryName;
     }
 
-    public void setRepository(GHRepository repo) {
-        this.repository = repo;
+    public void setRepositoryName(String repositoryName) {
+        this.repositoryName = repositoryName;
     }
 
     public TATeam getTaTeam() {
@@ -103,5 +112,23 @@ public class StudentTeam extends Team{
 
     public void setTaTeam(TATeam team) {
         this.taTeam = team;
+    }
+
+    @Override
+    public String getDetailName() {
+        return this.generateRepoDescription();
+    }
+
+    @Override
+    public List<Pair<String, String>> getDetailPairs() {
+        List<Pair<String, String>> pairs = super.getDetailPairs();
+        pairs.add(new Pair<>("Repository Name", this.getRepositoryName()));
+        String taTeamName = "None";
+        if (this.getTaTeam() != null) {
+            taTeamName = this.getTaTeam().getDetailName();
+        }
+        pairs.add(new Pair<>("TA Team", taTeamName));
+
+        return pairs;
     }
 }

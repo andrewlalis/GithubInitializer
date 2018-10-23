@@ -1,8 +1,8 @@
-package nl.andrewlalis.ui.control.command.executables;
+package nl.andrewlalis.command.executables;
 
 import nl.andrewlalis.git_api.GithubManager;
-import nl.andrewlalis.ui.view.dialogs.DefineTaTeamsDialog;
 import nl.andrewlalis.ui.view.InitializerApp;
+import nl.andrewlalis.ui.view.dialogs.DefineTaTeamsDialog;
 
 /**
  * This executable is slightly different from the others, in that it opens up a user interface to make editing TA teams

@@ -1,12 +1,17 @@
 package nl.andrewlalis.model;
 
+import nl.andrewlalis.util.Pair;
+
+import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
  * Represents one student's github information.
  */
+@Entity(name = "Student")
+@Table(name="students")
 public class Student extends Person {
 
     private static final Logger logger = Logger.getLogger(Student.class.getName());
@@ -17,7 +22,27 @@ public class Student extends Person {
     /**
      * A list of partners that the student has said that they would like to be partners with.
      */
-    private List<Integer> preferredPartners;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "student_preferred_partners",
+            joinColumns = { @JoinColumn(name = "student_id")},
+            inverseJoinColumns = {@JoinColumn(name = "preferred_partner_id")}
+    )
+    private List<Student> preferredPartners;
+
+    /**
+     * The team that this student is assigned to.
+     */
+    @ManyToOne
+    @JoinColumn(name = "team_id")
+    private StudentTeam team;
+
+    /**
+     * Constructs an empty student object.
+     */
+    public Student() {
+        this.preferredPartners = new ArrayList<>();
+    }
 
     /**
      * Constructs a student similarly to a Person, but with an extra preferredPartners list.
@@ -28,26 +53,64 @@ public class Student extends Person {
      * @param preferredPartners A list of this student's preferred partners, as a list of integers representing the
      * other students' numbers.
      */
-    public Student(int number, String name, String emailAddress, String githubUsername, List<Integer> preferredPartners) {
+    public Student(int number, String name, String emailAddress, String githubUsername, List<Student> preferredPartners) {
         super(number, name, emailAddress, githubUsername);
         this.preferredPartners = preferredPartners;
     }
 
-    public List<Integer> getPreferredPartners() {
+    public List<Student> getPreferredPartners() {
         return this.preferredPartners;
     }
 
+    public void setPreferredPartners(List<Student> preferredPartners) {
+        this.preferredPartners = preferredPartners;
+    }
+
+    public void addPreferredPartner(Student student) {
+        this.preferredPartners.add(student);
+    }
+
     /**
-     * Using a given map of all students, returns a student's preferred team.
-     * @param studentMap A mapping from student number to student for all students who have signed up.
-     * @return A team with unknown id, comprised of this student's preferred partners.
+     * Returns a student's preferred team, including himself.
+     * @return A team with unknown number, comprised of this student's preferred partners.
      */
-    public StudentTeam getPreferredTeam(Map<Integer, Student> studentMap) {
+    public StudentTeam getPreferredTeam() {
         StudentTeam t = new StudentTeam();
-        for (int partnerNumber : this.getPreferredPartners()) {
-            t.addMember(studentMap.get(partnerNumber));
+        for (Student partner : this.getPreferredPartners()) {
+            t.addMember(partner);
         }
         t.addMember(this);
         return t;
+    }
+
+    /**
+     * Assigns this student to the given team, from the student's perspective.
+     * @param team The team to set as the assigned team.
+     */
+    public void assignToTeam(StudentTeam team) {
+        this.team = team;
+    }
+
+    /**
+     * @return The team that this student is assigned to. May return null if the student is unassigned.
+     */
+    public StudentTeam getAssignedTeam() {
+        return this.team;
+    }
+
+    @Override
+    public List<Pair<String, String>> getDetailPairs() {
+        List<Pair<String, String>> pairs = super.getDetailPairs();
+        String teamNumber = "None";
+        if (this.getAssignedTeam() != null) {
+            teamNumber = String.valueOf(this.getAssignedTeam().getNumber());
+        }
+        pairs.add(new Pair<>("Team Number", teamNumber));
+
+        for (int i = 0; i < this.preferredPartners.size(); i++) {
+            pairs.add(new Pair<>("Preferred partner " + (i + 1), this.preferredPartners.get(i).getDetailName()));
+        }
+
+        return pairs;
     }
 }

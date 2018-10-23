@@ -1,4 +1,4 @@
-package nl.andrewlalis.ui.control.command;
+package nl.andrewlalis.command;
 
 /**
  * Classes which implement this interface tell that they may be 'executed', either via command-line, or through the use

@@ -1,9 +1,10 @@
-package nl.andrewlalis.ui.control.command.executables;
+package nl.andrewlalis.command.executables;
 
 import nl.andrewlalis.git_api.GithubManager;
 import nl.andrewlalis.model.StudentTeam;
 import nl.andrewlalis.model.TATeam;
 import nl.andrewlalis.ui.view.InitializerApp;
+import org.kohsuke.github.GHRepository;
 
 import java.util.List;
 
@@ -23,13 +24,17 @@ public class SetupStudentRepos extends GithubExecutable {
 
     @Override
     protected boolean executeWithManager(GithubManager manager, String[] args) {
-        if (args.length < 1) {
+        if (args.length < 2) {
             return false;
         }
         List<TATeam> taTeams = this.app.getOrganization().getTaTeams();
         for (TATeam team : taTeams) {
             for (StudentTeam studentTeam : team.getStudentTeams()) {
-                manager.setupStudentRepo(studentTeam, team, args[0]);
+                GHRepository assignmentsRepo = manager.getRepository(args[1]);
+                if (assignmentsRepo == null) {
+                    return false;
+                }
+                manager.setupStudentRepo(studentTeam, team, args[0], assignmentsRepo);
             }
         }
         return true;

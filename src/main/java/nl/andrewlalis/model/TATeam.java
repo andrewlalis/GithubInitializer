@@ -2,14 +2,19 @@ package nl.andrewlalis.model;
 
 import org.kohsuke.github.GHTeam;
 
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Represents a teaching assistant team, which is itself a 'team' in the organization. This class is used for parsing
- * json from requests to github to get a list of all teams in the organization.
+ * Represents a teaching assistant team, which is itself a 'team' in the organization.
  */
+@Entity(name = "TATeam")
+@Table(name = "ta_teams")
 public class TATeam extends Team {
 
     /**
@@ -20,11 +25,13 @@ public class TATeam extends Team {
     /**
      * The Github team associated with this team.
      */
+    @Transient
     private GHTeam githubTeam;
 
     /**
      * A list of all student teams for which this TA team is responsible.
      */
+    @OneToMany
     private List<StudentTeam> studentTeams;
 
     /**

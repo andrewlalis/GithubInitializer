@@ -26,16 +26,12 @@ import java.util.logging.Logger;
 public class GithubManager {
 
     /**
-     * The assignments repository where students will get assignments from.
-     */
-    private GHRepository assignmentsRepo;
-
-    /**
      * Github object for API interactions.
      */
     private GitHub github;
     private GHOrganization organization;
     private String accessToken;
+    private String organizationName;
 
     /**
      * The logger for outputting debug info.
@@ -45,14 +41,120 @@ public class GithubManager {
         logger.setParent(Logger.getGlobal());
     }
 
+    /**
+     * Creates an empty github manager, which at this point, essentially just allocates the object in memory.
+     */
+    public GithubManager() {
+
+    }
+
     public GithubManager(String organizationName, String accessToken) {
+        this.organizationName = organizationName;
         this.accessToken = accessToken;
+    }
+
+    /**
+     * Gets the organization that this manager manages.
+     * @return The Organization object that this manager was constructed for.
+     * @throws IOException If the organization does not exist or some other error occurs.
+     */
+    private GHOrganization getOrganization() throws IOException {
+        if (this.github == null || this.organization == null) {
+            this.github = GitHub.connectUsingOAuth(this.accessToken);
+            this.organization = this.github.getOrganization(this.organizationName);
+        }
+
+        return this.organization;
+    }
+
+    /**
+     * Determine if the manager is currently connected to github with the current organization name and access token.
+     * @return True if the manager is connected, or false otherwise.
+     */
+    public boolean validate() {
         try {
-            this.github = GitHub.connectUsingOAuth(accessToken);
-            this.organization = this.github.getOrganization(organizationName);
+            this.organization = this.getOrganization();
+            return this.organization != null;
         } catch (IOException e) {
-            logger.severe("Unable to make a GithubManager with organization name: " + organizationName + " and access token: " + accessToken);
+            return false;
+        }
+    }
+
+    public void setOrganizationName(String name) {
+        this.organizationName = name;
+        this.github = null;
+        this.organization = null;
+    }
+
+    public void setAccessToken(String token) {
+        this.accessToken = token;
+        this.github = null;
+        this.organization = null;
+    }
+
+    /**
+     * Determines if a repository exists in the current organization.
+     * @param repoName The name of the repository.
+     * @return True if the repository exists, false otherwise.
+     */
+    public boolean repoExists(String repoName) {
+        try {
+            GHRepository repo = this.getOrganization().getRepository(repoName);
+            return repo != null;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Determines if a team exists in the current organization.
+     * @param teamName The name of the team.
+     * @return True if the team exists, false otherwise.
+     */
+    public boolean teamExists(String teamName) {
+        try {
+            GHTeam team = this.getOrganization().getTeamByName(teamName);
+            return team != null;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Returns a list of repositories with the given substring.
+     * @param substring A string which all repositories should contain.
+     * @return A List of repositories whose names contain the given substring.
+     */
+    public List<GHRepository> listReposWithPrefix(String substring) {
+        List<GHRepository> repos = new ArrayList<>();
+        try {
+            List<GHRepository> allRepos = this.getOrganization().listRepositories().asList();
+            for (GHRepository repo : allRepos) {
+                if (repo.getName().contains(substring)) {
+                    repos.add(repo);
+                }
+            }
+        } catch (Exception e) {
+            logger.severe("IOException while listing repositories in the organization.");
             e.printStackTrace();
+        }
+
+        return repos;
+    }
+
+    /**
+     * Gets a repository by name.
+     * @param name The name of the repository.
+     * @return The repository with the given name, or null if none exists.
+     */
+    public GHRepository getRepository(String name) {
+        System.out.println(name);
+        try {
+            return this.getOrganization().getRepository(name);
+        } catch (IOException e) {
+            logger.severe("No repository with name: " + name + " exists.");
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -64,7 +166,7 @@ public class GithubManager {
         List<TATeam> teams = new ArrayList<>();
         try {
             Random rand = new Random();
-            for (Map.Entry<String, GHTeam> entry : this.organization.getTeams().entrySet()) {
+            for (Map.Entry<String, GHTeam> entry : this.getOrganization().getTeams().entrySet()) {
                 TATeam team = new TATeam(entry.getKey(), entry.getValue().getId());
                 team.setGithubTeam(entry.getValue());
                 for (GHUser user : entry.getValue().listMembers().asList()) {
@@ -86,7 +188,7 @@ public class GithubManager {
     public List<TeachingAssistant> getMembers() {
         List<TeachingAssistant> teachingAssistants = new ArrayList<>();
         try {
-            for (GHUser member : this.organization.listMembers().asList()) {
+            for (GHUser member : this.getOrganization().listMembers().asList()) {
                 teachingAssistants.add(new TeachingAssistant(-1, member.getName(), member.getEmail(), member.getLogin()));
             }
         } catch (IOException e) {
@@ -104,25 +206,25 @@ public class GithubManager {
      * @throws IOException If an HTTP request failed.
      */
     public void setupAssignmentsRepo(String assignmentsRepoName, String description, String allTeachingAssistants) throws IOException {
-        GHTeam team = this.organization.getTeamByName(allTeachingAssistants);
+        GHTeam team = this.getOrganization().getTeamByName(allTeachingAssistants);
         // Check if the repository already exists.
-        GHRepository existingRepo = this.organization.getRepository(assignmentsRepoName);
+        GHRepository existingRepo = this.getOrganization().getRepository(assignmentsRepoName);
         if (existingRepo != null) {
             existingRepo.delete();
             logger.fine("Deleted pre-existing assignments repository.");
         }
 
-        this.assignmentsRepo = this.createRepository(assignmentsRepoName, team, description, false, true, true);
+        GHRepository assignmentsRepo = this.createRepository(assignmentsRepoName, team, description, false, true, true);
 
-        if (this.assignmentsRepo == null) {
+        if (assignmentsRepo == null) {
             logger.severe("Could not create assignments repository.");
             return;
         }
 
-        this.protectMasterBranch(this.assignmentsRepo, team);
+        this.protectMasterBranch(assignmentsRepo, team);
 
         // Grant all teaching assistants write access.
-        team.add(this.assignmentsRepo, GHOrganization.Permission.ADMIN);
+        team.add(assignmentsRepo, GHOrganization.Permission.ADMIN);
         logger.fine("Gave admin rights to all teaching assistants in team: " + team.getName());
     }
 
@@ -132,28 +234,30 @@ public class GithubManager {
      * @param team The student team to set up.
      * @param taTeam The team of teaching assistants that is responsible for these students.
      * @param prefix The prefix to append to the front of the repo name.
+     * @param assignmentsRepo The assignments repository.
      */
-    public void setupStudentRepo(StudentTeam team, TATeam taTeam, String prefix) {
+    public void setupStudentRepo(StudentTeam team, TATeam taTeam, String prefix, GHRepository assignmentsRepo) {
         // First check that the assignments repo exists, otherwise no invitations can be sent.
-        if (this.assignmentsRepo == null) {
+        if (assignmentsRepo == null) {
             logger.warning("Assignments repository must be created before student repositories.");
             return;
         }
 
-        GHRepository repo = this.createRepository(team.generateUniqueName(prefix), taTeam.getGithubTeam(), team.generateRepoDescription(), false, true, true);
-
-        if (repo == null) {
-            logger.severe("Repository for student team " + team.getId() + " could not be created.");
+        GHRepository repo;
+        try {
+            repo = this.createRepository(team.generateUniqueName(prefix), taTeam.getGithubTeam(), team.generateRepoDescription(), false, true, true);
+        } catch (IOException e) {
+            logger.severe("Repository for student team " + team.getNumber() + " could not be created.");
             return;
         }
+
+        team.setRepositoryName(repo.getName());
+        team.setTaTeam(taTeam);
 
         this.protectMasterBranch(repo, taTeam.getGithubTeam());
         this.createDevelopmentBranch(repo);
         this.addTATeamAsAdmin(repo, taTeam.getGithubTeam());
-        this.inviteStudentsToRepos(team, repo);
-
-        team.setRepository(repo);
-        team.setTaTeam(taTeam);
+        this.inviteStudentsToRepos(team, assignmentsRepo);
     }
 
     /**
@@ -161,17 +265,22 @@ public class GithubManager {
      * @param substring The substring which repository names should contain to be deleted.
      */
     public void deleteAllRepositories(String substring) {
-        List<GHRepository> repositories = this.organization.listRepositories().asList();
-        for (GHRepository repo : repositories) {
-            if (repo.getName().contains(substring)) {
-                try {
-                    repo.delete();
-                    logger.info("Deleted repository: " + repo.getName());
-                } catch (IOException e) {
-                    logger.severe("Could not delete repository: " + repo.getName());
-                    e.printStackTrace();
+        try {
+            List<GHRepository> repositories = this.getOrganization().listRepositories().asList();
+            for (GHRepository repo : repositories) {
+                if (repo.getName().contains(substring)) {
+                    try {
+                        repo.delete();
+                        logger.info("Deleted repository: " + repo.getName());
+                    } catch (IOException e) {
+                        logger.severe("Could not delete repository: " + repo.getName());
+                        e.printStackTrace();
+                    }
                 }
             }
+        } catch (IOException e) {
+            logger.severe("Could not get Organization for listing repositories.");
+            e.printStackTrace();
         }
     }
 
@@ -180,11 +289,16 @@ public class GithubManager {
      * @param sub Any repository containing this substring will be archived.
      */
     public void archiveAllRepositories(String sub) {
-        List<GHRepository> repositories = this.organization.listRepositories().asList();
-        for (GHRepository repo : repositories) {
-            if (repo.getName().contains(sub)) {
-                archiveRepository(repo);
+        try {
+            List<GHRepository> repositories = this.getOrganization().listRepositories().asList();
+            for (GHRepository repo : repositories) {
+                if (repo.getName().contains(sub)) {
+                    archiveRepository(repo);
+                }
             }
+        } catch (IOException e) {
+            logger.severe("Could not get Organization for listing repositories.");
+            e.printStackTrace();
         }
     }
 
@@ -216,22 +330,33 @@ public class GithubManager {
     /**
      * Invites students in a team to their repository, and the assignments repository.
      * @param team The team of students to invite as collaborators.
-     * @param repo The repository created for the students.
+     * @param assignmentsRepo The repository that contains assignments for the class.
      */
-    private void inviteStudentsToRepos(StudentTeam team, GHRepository repo) {
+    private void inviteStudentsToRepos(StudentTeam team, GHRepository assignmentsRepo) {
         try {
-            logger.finest("Adding students from team: " + team.getId() + " as collaborators.");
-            List<GHUser> users = new ArrayList<>();
+            logger.finest("Adding students from team: " + team.getNumber() + " as collaborators.");
             for (Student student : team.getStudents()) {
                 GHUser user = this.github.getUser(student.getGithubUsername());
-                users.add(user);
-            }
 
-            repo.addCollaborators(users);
-            this.assignmentsRepo.addCollaborators(users);
+                this.addCollaboratorToRepo(user, assignmentsRepo);
+                this.addCollaboratorToRepo(user, this.organization.getRepository(team.getRepositoryName()));
+            }
         } catch (IOException e) {
             logger.severe("Could not add students as collaborators to assignments or their repo.\n" + team);
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Adds a user to a repository, or if a failure occurs, log the failure.
+     * @param user The user to add as a collaborator.
+     * @param repository The repository to add the user to.
+     */
+    private void addCollaboratorToRepo(GHUser user, GHRepository repository) {
+        try {
+            repository.addCollaborators(user);
+        } catch (IOException e) {
+            logger.severe("Could not add user " + user.getLogin() + " to repository " + repository.getName());
         }
     }
 
@@ -294,25 +419,20 @@ public class GithubManager {
      * @param hasWiki Whether the repo has a wiki enabled.
      * @param hasIssues Whether the repo has issues enabled.
      * @param isPrivate Whether or not the repository is private.
-     * @return The repository that was created, or null if it could not be created.
+     * @return The repository that was created.
+     * @throws IOException If an exception occurred while sending a request.
      */
-    private GHRepository createRepository(String name, GHTeam taTeam, String description, boolean hasWiki, boolean hasIssues, boolean isPrivate){
-        try {
-            GHCreateRepositoryBuilder builder = this.organization.createRepository(name);
-            builder.team(taTeam);
-            builder.wiki(hasWiki);
-            builder.issues(hasIssues);
-            builder.description(description);
-            builder.gitignoreTemplate("Java");
-            builder.private_(isPrivate);
-            GHRepository repo = builder.create();
-            logger.fine("Created repository: " + repo.getName());
-            return repo;
-        } catch (IOException e) {
-            logger.severe("Could not create repository: " + name);
-            e.printStackTrace();
-            return null;
-        }
+    private GHRepository createRepository(String name, GHTeam taTeam, String description, boolean hasWiki, boolean hasIssues, boolean isPrivate) throws IOException {
+        GHCreateRepositoryBuilder builder = this.getOrganization().createRepository(name);
+        builder.team(taTeam);
+        builder.wiki(hasWiki);
+        builder.issues(hasIssues);
+        builder.description(description);
+        builder.gitignoreTemplate("Java");
+        builder.private_(false); // TODO: Testing value of false. Production uses true.
+        GHRepository repo = builder.create();
+        logger.fine("Created repository: " + repo.getName());
+        return repo;
     }
 
 }

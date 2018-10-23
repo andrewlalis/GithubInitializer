@@ -1,7 +1,7 @@
-package nl.andrewlalis.ui.control.command.executables;
+package nl.andrewlalis.command.executables;
 
+import nl.andrewlalis.command.Executable;
 import nl.andrewlalis.git_api.GithubManager;
-import nl.andrewlalis.ui.control.command.Executable;
 
 /**
  * Represents an executable which interacts with github, and therefore needs access to a Github

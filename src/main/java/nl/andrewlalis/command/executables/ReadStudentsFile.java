@@ -1,7 +1,7 @@
-package nl.andrewlalis.ui.control.command.executables;
+package nl.andrewlalis.command.executables;
 
+import nl.andrewlalis.command.Executable;
 import nl.andrewlalis.model.StudentTeam;
-import nl.andrewlalis.ui.control.command.Executable;
 import nl.andrewlalis.ui.view.InitializerApp;
 import nl.andrewlalis.util.FileUtils;
 

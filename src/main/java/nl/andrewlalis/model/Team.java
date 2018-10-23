@@ -1,5 +1,10 @@
 package nl.andrewlalis.model;
 
+import nl.andrewlalis.model.database.BaseEntity;
+import nl.andrewlalis.ui.view.components.Detailable;
+import nl.andrewlalis.util.Pair;
+
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -8,39 +13,55 @@ import java.util.List;
  * An abstract Team object from which both Teaching Assistant and Student teams can be built. A Team consists of a list
  * of members, and a unique identification number.
  */
-public abstract class Team {
+@Entity(name = "Team")
+@Table(name = "teams")
+public abstract class Team extends BaseEntity implements Detailable {
 
     /**
      * An identification number unique to this team alone.
      */
-    protected int id;
+    @Column(name = "number")
+    protected int number;
 
     /**
      * A list of members of this team.
      */
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "team_members",
+            joinColumns = {@JoinColumn(name = "team_id")},
+            inverseJoinColumns = {@JoinColumn(name = "person_id")}
+    )
     private List<Person> members;
 
     /**
-     * Constructs this team with the given id.
-     * @param id The id to assign to this team.
+     * Constructs this team with the given number.
+     * @param number The number to assign to this team.
      */
-    public Team(int id) {
-        this.id = id;
+    public Team(int number) {
+        this.number = number;
         this.members = new ArrayList<>();
     }
 
     /**
-     * @param newId The new id number to assign to this team.
+     * Constructs an empty team with a default id of -1.
      */
-    public void setId(int newId) {
-        this.id = newId;
+    protected Team() {
+        this(-1);
     }
 
     /**
-     * @return This team's id number.
+     * @param newId The new number number to assign to this team.
      */
-    public int getId() {
-        return this.id;
+    public void setNumber(int newId) {
+        this.number = newId;
+    }
+
+    /**
+     * @return This team's number number.
+     */
+    public int getNumber() {
+        return this.number;
     }
 
     /**
@@ -123,7 +144,7 @@ public abstract class Team {
 
     /**
      * Checks if an object is equal to this team. First checks if the other object is a Team, and then if it has the
-     * same id and team size. If both of those conditions are met, then it will check that all team members are the
+     * same number and team size. If both of those conditions are met, then it will check that all team members are the
      * same.
      * @param obj The object to check for equality.
      * @return True if the two objects represent the same team, or false otherwise.
@@ -132,7 +153,7 @@ public abstract class Team {
     public boolean equals(Object obj) {
         if (obj instanceof Team) {
             Team team = (Team) obj;
-            return team.getId() == this.getId() && this.hasSameMembers(team);
+            return team.getNumber() == this.getNumber() && this.hasSameMembers(team);
         }
         return false;
     }
@@ -143,11 +164,32 @@ public abstract class Team {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Team of ").append(this.memberCount()).append(" members:\tID: ").append(this.id).append('\n');
+        sb.append("Team of ").append(this.memberCount()).append(" members:\tID: ").append(this.number).append('\n');
         for (Person person : this.members) {
             sb.append(person.toString()).append('\n');
         }
         return sb.toString();
     }
 
+    @Override
+    public String getDetailName() {
+        return String.valueOf(this.getNumber());
+    }
+
+    @Override
+    public String getDetailDescription() {
+        return null;
+    }
+
+    @Override
+    public List<Pair<String, String>> getDetailPairs() {
+        List<Pair<String, String>> pairs = new ArrayList<>();
+        pairs.add(new Pair<>("Number", this.getDetailName()));
+
+        for (int i = 0; i < this.memberCount(); i++) {
+            pairs.add(new Pair<>("Member " + (i + 1), this.members.get(i).getDetailName()));
+        }
+
+        return pairs;
+    }
 }
