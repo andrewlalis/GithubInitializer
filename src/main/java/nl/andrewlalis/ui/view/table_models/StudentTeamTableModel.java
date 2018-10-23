@@ -63,6 +63,13 @@ public class StudentTeamTableModel extends AbstractTableModel {
         return null;
     }
 
+    /**
+     * @return A list of all teams in this model.
+     */
+    public List<StudentTeam> getTeams() {
+        return this.studentTeamsList;
+    }
+
     @Override
     public int getRowCount() {
         return this.studentTeamsList.size();

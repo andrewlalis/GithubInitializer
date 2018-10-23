@@ -53,4 +53,16 @@ public class DbHelper {
         return studentTeams;
     }
 
+    /**
+     * Executes some transaction content.
+     * @param content The content to execute.
+     */
+    public static void executeTransactionContent(TransactionContent content) {
+        Session session = DbUtil.getSessionFactory().openSession();
+        Transaction tx = session.beginTransaction();
+        content.doTransaction(session);
+        tx.commit();
+        session.close();
+    }
+
 }

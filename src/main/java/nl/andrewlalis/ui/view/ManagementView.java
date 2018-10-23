@@ -5,6 +5,7 @@ import nl.andrewlalis.model.database.DbHelper;
 import nl.andrewlalis.model.database.DbUtil;
 import nl.andrewlalis.ui.control.listeners.management_view.PopupSelector;
 import nl.andrewlalis.ui.control.listeners.management_view.student_actions.RemoveFromCourseListener;
+import nl.andrewlalis.ui.control.listeners.management_view.student_actions.SetTeamListener;
 import nl.andrewlalis.ui.view.components.DetailPanel;
 import nl.andrewlalis.ui.view.table_models.StudentTableModel;
 import nl.andrewlalis.ui.view.table_models.StudentTeamTableModel;
@@ -62,6 +63,9 @@ public class ManagementView extends AbstractView {
         contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         this.detailPanel = new DetailPanel();
+
+        this.studentsModel = new StudentTableModel(DbHelper.getStudents());
+        this.studentTeamModel = new StudentTeamTableModel();
 
         contentPane.add(this.buildCommandPanel(), BorderLayout.WEST);
         contentPane.add(this.detailPanel, BorderLayout.EAST);
@@ -140,17 +144,26 @@ public class ManagementView extends AbstractView {
      */
     private JPanel buildStudentsTablePanel() {
         // Initialize the model, table, and a surrounding scroll pane.
-        this.studentsModel = new StudentTableModel(DbHelper.getStudents());
-
         JTable table = new JTable(this.studentsModel);
         table.setFillsViewportHeight(true);
         table.getSelectionModel().addListSelectionListener(listSelectionEvent -> {
-            detailPanel.setDetailableEntity(studentsModel.getStudentAt(table.getSelectedRow()));
+            int row = table.getSelectedRow();
+            if (row >= 0 && row < studentsModel.getRowCount()) {
+                detailPanel.setDetailableEntity(studentsModel.getStudentAt(row));
+            }
         });
+
+        // A context menu for the table.
         JPopupMenu menu = new JPopupMenu("Menu");
+        // Item for setting a student's team.
+        JMenuItem setTeamItem = new JMenuItem("Set team");
+        setTeamItem.addActionListener(new SetTeamListener(this, table, this.studentTeamModel));
+        menu.add(setTeamItem);
+        // Item for removing a student from the course.
         JMenuItem removeItem = new JMenuItem("Remove from course");
         removeItem.addActionListener(new RemoveFromCourseListener(table));
         menu.add(removeItem);
+
         menu.addPopupMenuListener(new PopupSelector(table));
         table.setComponentPopupMenu(menu);
 
@@ -161,7 +174,8 @@ public class ManagementView extends AbstractView {
      * @return A JPanel to be put into a tab for display of a list of student teams.
      */
     private JPanel buildStudentTeamsTablePanel() {
-        this.studentTeamModel = new StudentTeamTableModel(DbHelper.getStudentTeams());
+        // Make sure that the model has the latest student teams.
+        this.studentTeamModel.setStudentTeamsList(DbHelper.getStudentTeams());
 
         JTable table = new JTable(this.studentTeamModel);
         table.setFillsViewportHeight(true);
