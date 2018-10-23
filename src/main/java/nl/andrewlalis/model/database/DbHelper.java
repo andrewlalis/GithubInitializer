@@ -3,7 +3,6 @@ package nl.andrewlalis.model.database;
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.List;
 /**
  * This class will contain some static methods to help in the retrieval of commonly used information.
  */
+@SuppressWarnings("unchecked")
 public class DbHelper {
 
     /**
@@ -18,8 +18,7 @@ public class DbHelper {
      * @return A list of students.
      */
     public static List<Student> getStudents() {
-        SessionFactory sessionFactory = DbUtil.getSessionFactory();
-        Session session = sessionFactory.openSession();
+        Session session = DbUtil.getSessionFactory().openSession();
         List<Student> students = (List<Student>) session.createQuery("from Student").list();
         session.close();
         return students;
@@ -41,6 +40,17 @@ public class DbHelper {
 
         tx.commit();
         session.close();
+    }
+
+    /**
+     * Gets a list of student teams in the database.
+     * @return A list of student teams.
+     */
+    public static List<StudentTeam> getStudentTeams() {
+        Session session = DbUtil.getSessionFactory().openSession();
+        List<StudentTeam> studentTeams = (List<StudentTeam>) session.createQuery("from StudentTeam").list();
+        session.close();
+        return studentTeams;
     }
 
 }

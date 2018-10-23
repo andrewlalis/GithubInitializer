@@ -112,4 +112,9 @@ public class StudentTeam extends Team {
     public void setTaTeam(TATeam team) {
         this.taTeam = team;
     }
+
+    @Override
+    public String getDetailName() {
+        return this.generateRepoDescription();
+    }
 }

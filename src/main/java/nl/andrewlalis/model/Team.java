@@ -1,6 +1,8 @@
 package nl.andrewlalis.model;
 
 import nl.andrewlalis.model.database.BaseEntity;
+import nl.andrewlalis.ui.view.components.Detailable;
+import nl.andrewlalis.util.Pair;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -13,7 +15,7 @@ import java.util.List;
  */
 @Entity(name = "Team")
 @Table(name = "teams")
-public abstract class Team extends BaseEntity {
+public abstract class Team extends BaseEntity implements Detailable {
 
     /**
      * An identification number unique to this team alone.
@@ -24,7 +26,7 @@ public abstract class Team extends BaseEntity {
     /**
      * A list of members of this team.
      */
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "team_members",
             joinColumns = {@JoinColumn(name = "team_id")},
@@ -39,6 +41,13 @@ public abstract class Team extends BaseEntity {
     public Team(int number) {
         this.number = number;
         this.members = new ArrayList<>();
+    }
+
+    /**
+     * Constructs an empty team with a default id of -1.
+     */
+    protected Team() {
+        this(-1);
     }
 
     /**
@@ -162,4 +171,25 @@ public abstract class Team extends BaseEntity {
         return sb.toString();
     }
 
+    @Override
+    public String getDetailName() {
+        return String.valueOf(this.getNumber());
+    }
+
+    @Override
+    public String getDetailDescription() {
+        return null;
+    }
+
+    @Override
+    public List<Pair<String, String>> getDetailPairs() {
+        List<Pair<String, String>> pairs = new ArrayList<>();
+        pairs.add(new Pair<>("Number", this.getDetailName()));
+
+        for (int i = 0; i < this.memberCount(); i++) {
+            pairs.add(new Pair<>("Member " + (i + 1), this.members.get(i).getDetailName()));
+        }
+
+        return pairs;
+    }
 }
