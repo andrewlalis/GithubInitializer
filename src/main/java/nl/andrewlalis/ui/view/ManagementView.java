@@ -3,6 +3,8 @@ package nl.andrewlalis.ui.view;
 import nl.andrewlalis.git_api.GithubManager;
 import nl.andrewlalis.model.database.DbHelper;
 import nl.andrewlalis.model.database.DbUtil;
+import nl.andrewlalis.ui.control.listeners.management_view.PopupSelector;
+import nl.andrewlalis.ui.control.listeners.management_view.student_actions.RemoveFromCourseListener;
 import nl.andrewlalis.ui.view.components.DetailPanel;
 import nl.andrewlalis.ui.view.table_models.StudentTableModel;
 import nl.andrewlalis.ui.view.table_models.StudentTeamTableModel;
@@ -145,6 +147,13 @@ public class ManagementView extends AbstractView {
         table.getSelectionModel().addListSelectionListener(listSelectionEvent -> {
             detailPanel.setDetailableEntity(studentsModel.getStudentAt(table.getSelectedRow()));
         });
+        JPopupMenu menu = new JPopupMenu("Menu");
+        JMenuItem removeItem = new JMenuItem("Remove from course");
+        removeItem.addActionListener(new RemoveFromCourseListener(table));
+        menu.add(removeItem);
+        menu.addPopupMenuListener(new PopupSelector(table));
+        table.setComponentPopupMenu(menu);
+
         return this.buildGenericTablePanel(table);
     }
 

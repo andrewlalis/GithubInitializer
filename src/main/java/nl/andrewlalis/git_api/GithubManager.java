@@ -251,7 +251,7 @@ public class GithubManager {
             return;
         }
 
-        team.setRepository(repo);
+        team.setRepositoryName(repo.getName());
         team.setTaTeam(taTeam);
 
         this.protectMasterBranch(repo, taTeam.getGithubTeam());
@@ -339,7 +339,7 @@ public class GithubManager {
                 GHUser user = this.github.getUser(student.getGithubUsername());
 
                 this.addCollaboratorToRepo(user, assignmentsRepo);
-                this.addCollaboratorToRepo(user, team.getRepository());
+                this.addCollaboratorToRepo(user, this.organization.getRepository(team.getRepositoryName()));
             }
         } catch (IOException e) {
             logger.severe("Could not add students as collaborators to assignments or their repo.\n" + team);

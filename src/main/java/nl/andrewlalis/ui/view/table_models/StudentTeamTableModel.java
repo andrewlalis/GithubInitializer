@@ -21,7 +21,7 @@ public class StudentTeamTableModel extends AbstractTableModel {
      * The column headers for this model. In addition to these headers, this model will dynamically create headers for
      * each additional student to be listed in the table.
      */
-    private final String[] staticColumns = {"Number", "Member Count"};
+    private final String[] staticColumns = {"Number", "Repository Name", "TA Team"};
 
     /**
      * Dynamic columns which are generated depending on the teams.
@@ -90,7 +90,9 @@ public class StudentTeamTableModel extends AbstractTableModel {
             case 0:
                 return team.getId();
             case 1:
-                return team.memberCount();
+                return (team.getRepositoryName() == null) ? "None" : team.getRepositoryName();
+            case 2:
+                return (team.getTaTeam() == null) ? "None" : team.getTaTeam().getDetailName();
             default:
                 return this.getMemberInColumn(team, i1);
         }
@@ -135,8 +137,9 @@ public class StudentTeamTableModel extends AbstractTableModel {
         this.columns = new String[this.staticColumns.length + maxMembers];
         this.columns[0] = this.staticColumns[0];
         this.columns[1] = this.staticColumns[1];
+        this.columns[2] = this.staticColumns[2];
         for (int i = 0; i < maxMembers; i++) {
-            this.columns[i + 2] = "Member " + (i + 1);
+            this.columns[i + this.staticColumns.length] = "Member " + (i + 1);
         }
     }
 }

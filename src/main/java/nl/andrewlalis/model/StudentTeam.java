@@ -1,12 +1,13 @@
 package nl.andrewlalis.model;
 
-import org.kohsuke.github.GHRepository;
+import nl.andrewlalis.util.Pair;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents one or more students' collective information.
@@ -18,8 +19,8 @@ public class StudentTeam extends Team {
     /**
      * The repository belonging to this team.
      */
-    @Transient
-    private GHRepository repository;
+    @Column(name = "repository_name", unique = true)
+    private String repositoryName;
 
     /**
      * The TATeam responsible for this student team.
@@ -97,12 +98,12 @@ public class StudentTeam extends Team {
         return sb.toString();
     }
 
-    public GHRepository getRepository() {
-        return this.repository;
+    public String getRepositoryName() {
+        return this.repositoryName;
     }
 
-    public void setRepository(GHRepository repo) {
-        this.repository = repo;
+    public void setRepositoryName(String repositoryName) {
+        this.repositoryName = repositoryName;
     }
 
     public TATeam getTaTeam() {
@@ -116,5 +117,18 @@ public class StudentTeam extends Team {
     @Override
     public String getDetailName() {
         return this.generateRepoDescription();
+    }
+
+    @Override
+    public List<Pair<String, String>> getDetailPairs() {
+        List<Pair<String, String>> pairs = super.getDetailPairs();
+        pairs.add(new Pair<>("Repository Name", this.getRepositoryName()));
+        String taTeamName = "None";
+        if (this.getTaTeam() != null) {
+            taTeamName = this.getTaTeam().getDetailName();
+        }
+        pairs.add(new Pair<>("TA Team", taTeamName));
+
+        return pairs;
     }
 }

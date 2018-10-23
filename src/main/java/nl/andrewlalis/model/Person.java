@@ -21,25 +21,25 @@ public abstract class Person extends BaseEntity implements Detailable {
     /**
      * The unique identification number for this person. (P- or S-Number)
      */
-    @Column(name="number")
+    @Column(name="number", nullable = false)
     protected int number;
 
     /**
      * The person's first and last name.
      */
-    @Column(name="name")
+    @Column(name="name", nullable = false)
     protected String name;
 
     /**
      * The person's email address.
      */
-    @Column(name="email_address")
+    @Column(name="email_address", nullable = false)
     protected String emailAddress;
 
     /**
      * The person's github username.
      */
-    @Column(name="github_username")
+    @Column(name="github_username", nullable = false)
     protected String githubUsername;
 
     /**

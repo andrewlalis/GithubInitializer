@@ -29,6 +29,11 @@ public abstract class AbstractView extends JFrame {
     private List<AbstractView> parentViews;
 
     /**
+     * The image icon for all abstract views.
+     */
+    private static final ImageIcon imageIcon = new ImageIcon(AbstractView.class.getResource("/image/icon.png"));
+
+    /**
      * Initializes the view by packing the content pane as it is defined by any child, and setting some generic swing
      * values.
      * @param title The window's title.
@@ -42,6 +47,7 @@ public abstract class AbstractView extends JFrame {
         this.githubManager = githubManager;
         this.childViews = new ArrayList<>();
         this.parentViews = new ArrayList<>();
+        this.setIconImage(imageIcon.getImage());
         this.setContentPane(this.buildContentPane());
         this.setDefaultCloseOperation(defaultCloseOperation);
         if (preferredSize != null) {
