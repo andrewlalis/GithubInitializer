@@ -1,7 +1,6 @@
 package nl.andrewlalis.model;
 
 import nl.andrewlalis.model.database.BaseEntity;
-import nl.andrewlalis.ui.view.components.Detailable;
 import nl.andrewlalis.util.Pair;
 
 import javax.persistence.Column;
@@ -16,7 +15,7 @@ import java.util.List;
  */
 @Entity(name = "Person")
 @Table(name = "persons")
-public abstract class Person extends BaseEntity implements Detailable {
+public abstract class Person extends BaseEntity {
 
     /**
      * The unique identification number for this person. (P- or S-Number)
@@ -146,11 +145,6 @@ public abstract class Person extends BaseEntity implements Detailable {
     @Override
     public String getDetailName() {
         return this.getName() + ", " + this.getNumber();
-    }
-
-    @Override
-    public String getDetailDescription() {
-        return null;
     }
 
     @Override

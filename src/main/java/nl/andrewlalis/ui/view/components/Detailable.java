@@ -15,11 +15,6 @@ public interface Detailable {
     String getDetailName();
 
     /**
-     * @return Some more information to display below the name for this object.
-     */
-    String getDetailDescription();
-
-    /**
      * @return A String-to-String mapping for some key value pairs of properties to display.
      */
     List<Pair<String, String>> getDetailPairs();

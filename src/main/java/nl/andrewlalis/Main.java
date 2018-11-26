@@ -48,6 +48,9 @@ public class Main {
 
         initializeTestingData();
         StartView startView = new StartView(manager, "InitializerTesting", userOptions.get("token"));
+        manager.setAccessToken(startView.getAccessToken());
+        manager.setOrganizationName(startView.getOrganizationName());
+        manager.deleteAllRepositories("AOOP");
     }
 
     /**
