@@ -2,10 +2,7 @@ package nl.andrewlalis.model;
 
 import org.kohsuke.github.GHTeam;
 
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,7 +11,6 @@ import java.util.List;
  * Represents a teaching assistant team, which is itself a 'team' in the organization.
  */
 @Entity(name = "TATeam")
-@Table(name = "ta_teams")
 public class TATeam extends Team {
 
     /**
@@ -32,7 +28,19 @@ public class TATeam extends Team {
      * A list of all student teams for which this TA team is responsible.
      */
     @OneToMany
+    @JoinTable(
+            name = "ta_teams_student_teams",
+            joinColumns = { @JoinColumn(name = "ta_team_id") },
+            inverseJoinColumns = { @JoinColumn(name = "student_team_id") }
+    )
     private List<StudentTeam> studentTeams;
+
+    /**
+     * Constructs an empty TA team.
+     */
+    public TATeam() {
+        // Do nothing here, since the no-arg constructor of Team will be called.
+    }
 
     /**
      * Constructs a team without any teaching assistant members.

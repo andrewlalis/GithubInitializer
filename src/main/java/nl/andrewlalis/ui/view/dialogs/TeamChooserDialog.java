@@ -5,6 +5,7 @@ import nl.andrewlalis.model.Team;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
  * With this dialog, a user can choose from a list of teams. This works for any type of team.
@@ -25,9 +26,9 @@ public class TeamChooserDialog extends JDialog {
     /**
      * The model containing the list of teams.
      */
-    private StudentTeam[] teams;
+    private List<StudentTeam> teams;
 
-    public TeamChooserDialog(Window parent, StudentTeam[] teams) {
+    public TeamChooserDialog(Window parent, List<StudentTeam> teams) {
         super(parent, "Team Chooser", ModalityType.APPLICATION_MODAL);
         this.teams = teams;
         this.setContentPane(this.buildContentPane());
@@ -47,9 +48,9 @@ public class TeamChooserDialog extends JDialog {
 
         // Main selection panel.
         // Create a list of numbers to represent the teams.
-        Integer[] teamNumbers = new Integer[this.teams.length];
-        for (int row = 0; row < this.teams.length; row++) {
-            teamNumbers[row] = this.teams[row].getNumber();
+        Integer[] teamNumbers = new Integer[this.teams.size()];
+        for (int row = 0; row < this.teams.size(); row++) {
+            teamNumbers[row] = this.teams.get(row).getNumber();
         }
 
         this.teamChooserBox = new JComboBox<>(teamNumbers);
@@ -60,7 +61,7 @@ public class TeamChooserDialog extends JDialog {
         JButton doneButton = new JButton("Done");
         // Add a small action listener to set the selected team and dispose of the dialog.
         doneButton.addActionListener(actionEvent -> {
-            selectedTeam = teams[teamChooserBox.getSelectedIndex()];
+            selectedTeam = teams.get(teamChooserBox.getSelectedIndex());
             dispose();
         });
         confirmPanel.add(doneButton);

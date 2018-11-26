@@ -2,15 +2,15 @@ package nl.andrewlalis.ui.view.table_models;
 
 import nl.andrewlalis.model.Student;
 import nl.andrewlalis.model.StudentTeam;
+import nl.andrewlalis.model.database.BaseEntity;
 
-import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This table model represents the list of student teams.
  */
-public class StudentTeamTableModel extends AbstractTableModel {
+public class StudentTeamTableModel extends AbstractEntityModel {
 
     /**
      * The container for the data objects.
@@ -63,6 +63,11 @@ public class StudentTeamTableModel extends AbstractTableModel {
         return null;
     }
 
+    @Override
+    public BaseEntity getEntityAt(int row) {
+        return this.getStudentTeamAt(row);
+    }
+
     /**
      * @return A list of all teams in this model.
      */
@@ -84,6 +89,19 @@ public class StudentTeamTableModel extends AbstractTableModel {
     public String getColumnName(int i) {
         if (i >= 0 && i < this.columns.length) {
             return this.columns[i];
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Class<?> getColumnClass(int i) {
+        if (this.studentTeamsList.isEmpty()) {
+            return Object.class;
+        }
+        Object value = this.getValueAt(0, i);
+        if (value != null) {
+            return value.getClass();
         } else {
             return null;
         }

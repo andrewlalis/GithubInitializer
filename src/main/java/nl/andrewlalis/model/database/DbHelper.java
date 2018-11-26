@@ -19,7 +19,9 @@ public class DbHelper {
      */
     public static List<Student> getStudents() {
         Session session = DbUtil.getSessionFactory().openSession();
-        List<Student> students = (List<Student>) session.createQuery("from Student").list();
+        List<Student> students = (List<Student>) session.createQuery(
+                "SELECT student FROM Student student"
+        ).getResultList();
         session.close();
         return students;
     }
@@ -48,7 +50,9 @@ public class DbHelper {
      */
     public static List<StudentTeam> getStudentTeams() {
         Session session = DbUtil.getSessionFactory().openSession();
-        List<StudentTeam> studentTeams = (List<StudentTeam>) session.createQuery("from StudentTeam").list();
+        List<StudentTeam> studentTeams = (List<StudentTeam>) session.createQuery(
+                "SELECT team FROM StudentTeam team"
+        ).getResultList();
         session.close();
         return studentTeams;
     }

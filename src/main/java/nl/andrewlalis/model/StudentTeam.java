@@ -5,7 +5,6 @@ import nl.andrewlalis.util.Pair;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,7 +12,6 @@ import java.util.List;
  * Represents one or more students' collective information.
  */
 @Entity(name = "StudentTeam")
-@Table(name = "student_teams")
 public class StudentTeam extends Team {
 
     /**

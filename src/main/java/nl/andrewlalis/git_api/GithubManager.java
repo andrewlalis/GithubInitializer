@@ -261,6 +261,45 @@ public class GithubManager {
     }
 
     /**
+     * Creates a student team's repository, without inviting students or doing anything extra.
+     * @param team The student team to create the repository for.
+     * @param prefix A prefix to the repository name.
+     * @return The name of the repository created, or null if an error occurred.
+     */
+    public String setupStudentRepo(StudentTeam team, String prefix) {
+        GHRepository repo;
+        try {
+            repo = this.createRepository(team.generateUniqueName(prefix), null, team.generateRepoDescription(), false, true, false);
+            this.createDevelopmentBranch(repo);
+            return repo.getName();
+        } catch (IOException e) {
+            logger.severe("Repository for student team " + team.getNumber() + " could not be created.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Deletes the repository with the given name.
+     * @param name The name of the repository to delete.
+     * @return True if the deletion was successful, or false if an error occurred.
+     */
+    public boolean deleteRepository(String name) {
+        try {
+            GHRepository repo = this.getOrganization().getRepository(name);
+            if (repo == null) {
+                return false;
+            }
+            repo.delete();
+            return true;
+        } catch (IOException e) {
+            logger.severe("Could not delete repository: " + name);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
      * Deletes all repositories in the organization.
      * @param substring The substring which repository names should contain to be deleted.
      */
@@ -303,11 +342,24 @@ public class GithubManager {
     }
 
     /**
+     * Archives a repository with the given name.
+     * @param name The name of the repository to archive.
+     * @return True if successful, false otherwise.
+     */
+    public boolean archiveRepository(String name) {
+        try {
+            return this.archiveRepository(this.getOrganization().getRepository(name));
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    /**
      * Archives a repository so that it can no longer be manipulated.
      * TODO: Change to using Github API instead of Apache HttpUtils.
      * @param repo The repository to archive.
      */
-    private void archiveRepository(GHRepository repo) {
+    private boolean archiveRepository(GHRepository repo) {
         try {
             HttpPatch patch = new HttpPatch("https://api.github.com/repos/" + repo.getFullName() + "?access_token=" + this.accessToken);
             CloseableHttpClient client = HttpClientBuilder.create().build();
@@ -321,9 +373,11 @@ public class GithubManager {
                 throw new IOException("Could not archive repository: " + repo.getName() + ". Code: " + response.getStatusLine().getStatusCode());
             }
             logger.info("Archived repository: " + repo.getFullName());
+            return true;
         } catch (IOException e) {
             logger.severe("Could not archive repository: " + repo.getName());
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -429,7 +483,7 @@ public class GithubManager {
         builder.issues(hasIssues);
         builder.description(description);
         builder.gitignoreTemplate("Java");
-        builder.private_(false); // TODO: Testing value of false. Production uses true.
+        builder.private_(isPrivate); // TODO: Testing value of false. Production uses true.
         GHRepository repo = builder.create();
         logger.fine("Created repository: " + repo.getName());
         return repo;

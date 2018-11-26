@@ -11,7 +11,6 @@ import java.util.logging.Logger;
  * Represents one student's github information.
  */
 @Entity(name = "Student")
-@Table(name="students")
 public class Student extends Person {
 
     private static final Logger logger = Logger.getLogger(Student.class.getName());

@@ -1,14 +1,14 @@
 package nl.andrewlalis.ui.view.table_models;
 
 import nl.andrewlalis.model.Student;
+import nl.andrewlalis.model.database.BaseEntity;
 
-import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
 /**
  * This table model is used for the representation of a list of persons, with their basic information.
  */
-public class StudentTableModel extends AbstractTableModel {
+public class StudentTableModel extends AbstractEntityModel {
 
     /**
      * The list of data that is used in the table.
@@ -50,6 +50,11 @@ public class StudentTableModel extends AbstractTableModel {
     }
 
     @Override
+    public BaseEntity getEntityAt(int row) {
+        return this.getStudentAt(row);
+    }
+
+    @Override
     public int getRowCount() {
         return studentsList.size();
     }
@@ -62,6 +67,14 @@ public class StudentTableModel extends AbstractTableModel {
     @Override
     public String getColumnName(int i) {
         return this.columns[i];
+    }
+
+    @Override
+    public Class<?> getColumnClass(int i) {
+        if (this.studentsList.isEmpty()) {
+            return Object.class;
+        }
+        return getValueAt(0, i).getClass();
     }
 
     @Override

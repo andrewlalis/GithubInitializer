@@ -3,10 +3,9 @@ package nl.andrewlalis.ui.view;
 import nl.andrewlalis.git_api.GithubManager;
 import nl.andrewlalis.model.database.DbHelper;
 import nl.andrewlalis.model.database.DbUtil;
-import nl.andrewlalis.ui.control.listeners.management_view.PopupSelector;
-import nl.andrewlalis.ui.control.listeners.management_view.student_actions.RemoveFromCourseListener;
-import nl.andrewlalis.ui.control.listeners.management_view.student_actions.SetTeamListener;
 import nl.andrewlalis.ui.view.components.DetailPanel;
+import nl.andrewlalis.ui.view.components.tables.StudentTeamsTable;
+import nl.andrewlalis.ui.view.components.tables.StudentsTable;
 import nl.andrewlalis.ui.view.table_models.StudentTableModel;
 import nl.andrewlalis.ui.view.table_models.StudentTeamTableModel;
 
@@ -106,9 +105,15 @@ public class ManagementView extends AbstractView {
         // The real container for all the data views.
         JTabbedPane tabbedPane = new JTabbedPane();
 
-        tabbedPane.addTab("Students", this.buildStudentsTablePanel());
-        tabbedPane.addTab("Student Teams", this.buildStudentTeamsTablePanel());
-        tabbedPane.addTab("Teaching Assistants", this.buildTAsTablePanel());
+        tabbedPane.addTab("Students", this.buildGenericTablePanel(
+                new StudentsTable(this.studentsModel, this.studentTeamModel, this.detailPanel)
+        ));
+        tabbedPane.addTab("Student Teams", this.buildGenericTablePanel(
+                new StudentTeamsTable(this.studentTeamModel, this.detailPanel, this.getGithubManager())
+        ));
+        tabbedPane.addTab("Teaching Assistants", this.buildGenericTablePanel(
+                null
+        ));
 
         overviewPanel.add(tabbedPane, BorderLayout.CENTER);
 
@@ -125,6 +130,12 @@ public class ManagementView extends AbstractView {
         searchPanel.add(new JLabel("Search", SwingConstants.LEFT), BorderLayout.WEST);
         searchPanel.add(new JTextField(), BorderLayout.CENTER);
 
+        JButton refreshButton = new JButton("Refresh Tables");
+        refreshButton.addActionListener(actionEvent -> {
+            this.updateModels();
+        });
+        searchPanel.add(refreshButton, BorderLayout.EAST);
+
         return searchPanel;
     }
 
@@ -137,57 +148,6 @@ public class ManagementView extends AbstractView {
         JPanel surroundingPanel = new JPanel(new BorderLayout());
         surroundingPanel.add(new JScrollPane(table), BorderLayout.CENTER);
         return surroundingPanel;
-    }
-
-    /**
-     * @return A JPanel to be put into a tab for display of a list of students.
-     */
-    private JPanel buildStudentsTablePanel() {
-        // Initialize the model, table, and a surrounding scroll pane.
-        JTable table = new JTable(this.studentsModel);
-        table.setFillsViewportHeight(true);
-        table.getSelectionModel().addListSelectionListener(listSelectionEvent -> {
-            int row = table.getSelectedRow();
-            if (row >= 0 && row < studentsModel.getRowCount()) {
-                detailPanel.setDetailableEntity(studentsModel.getStudentAt(row));
-            }
-        });
-
-        // A context menu for the table.
-        JPopupMenu menu = new JPopupMenu("Menu");
-        // Item for setting a student's team.
-        JMenuItem setTeamItem = new JMenuItem("Set team");
-        setTeamItem.addActionListener(new SetTeamListener(this, table, this.studentTeamModel));
-        menu.add(setTeamItem);
-        // Item for removing a student from the course.
-        JMenuItem removeItem = new JMenuItem("Remove from course");
-        removeItem.addActionListener(new RemoveFromCourseListener(table));
-        menu.add(removeItem);
-
-        menu.addPopupMenuListener(new PopupSelector(table));
-        table.setComponentPopupMenu(menu);
-
-        return this.buildGenericTablePanel(table);
-    }
-
-    /**
-     * @return A JPanel to be put into a tab for display of a list of student teams.
-     */
-    private JPanel buildStudentTeamsTablePanel() {
-        // Make sure that the model has the latest student teams.
-        this.studentTeamModel.setStudentTeamsList(DbHelper.getStudentTeams());
-
-        JTable table = new JTable(this.studentTeamModel);
-        table.setFillsViewportHeight(true);
-        table.getSelectionModel().addListSelectionListener(listSelectionEvent -> {
-            detailPanel.setDetailableEntity(studentTeamModel.getStudentTeamAt(table.getSelectedRow()));
-        });
-
-        return this.buildGenericTablePanel(table);
-    }
-
-    private JPanel buildTAsTablePanel() {
-        return new JPanel();
     }
 
     /**

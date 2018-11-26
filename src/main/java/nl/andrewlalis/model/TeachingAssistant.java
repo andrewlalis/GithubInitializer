@@ -1,14 +1,19 @@
 package nl.andrewlalis.model;
 
 import javax.persistence.Entity;
-import javax.persistence.Table;
 
 /**
  * Represents an administrator in the organization, who manages student teams.
  */
 @Entity(name = "TeachingAssistant")
-@Table(name = "teaching_assistants")
 public class TeachingAssistant extends Person {
+
+    /**
+     * Constructs an empty Teaching Assistant object.
+     */
+    public TeachingAssistant() {
+        super();
+    }
 
     /**
      * Constructs a Teaching Assistant from only a github username.
